@@ -10,9 +10,6 @@
     <string name="notification_registered">%s registered</string>
     <string name="notification_register_failure">%s failed to register</string>
     <string name="tunnel_host"></string>
-    <string name="about_version">Linphone Android %s</string>
-    <string name="about_liblinphone_version">Linphone Core %s</string>
-    <string name="about_link">www.linphone.org</string>
     <string name="sync_account_name">linphone contacts</string>
 
     <!-- Common -->
@@ -32,7 +29,6 @@
     <string name="accept">Accept</string>
     <string name="open">Open</string>
     <string name="continue_text">Continue</string>
-    <string name="about">About</string>
     <string name="deny">Deny</string>
     <string name="no_account">No account configured</string>
     <string name="search">Search</string>
@@ -53,13 +49,10 @@
     <string name="link_account">Link your account</string>
     <string name="update_available">An update is available</string>
 
-    <!-- Launch screen -->
-    <string name="app_description">the <i>libre</i> SIP client</string>
-
     <!-- Assistant -->
     <string name="welcome">February 7th</string>
     <string name="assistant">You must delete some Uis. But keep phone capability.</string>
-    <string name="assistant_creatoote_account">Create account</string>
+    <string name="assistant_create_account">Create account</string>
     <string name="assistant_link_account">Link account</string>
     <string name="assistant_continue">Continue</string>
     <string name="assistant_activate">Activate your account</string>
@@ -468,7 +461,6 @@
     <string name="content_description_backspace">Backspace</string>
     <string name="content_description_chat">Chat</string>
     <string name="content_description_dial_back">Dial back</string>
-    <string name="content_description_dialer_back">Return to dialer</string>
     <string name="content_description_contact_picture">Contact picture</string>
     <string name="content_description_send_message">Send message</string>
     <string name="content_description_detail">Details</string>

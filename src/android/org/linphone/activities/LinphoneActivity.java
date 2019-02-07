@@ -97,7 +97,6 @@ import org.linphone.core.Factory;
 import org.linphone.core.ProxyConfig;
 import org.linphone.core.Reason;
 import org.linphone.core.RegistrationState;
-import org.linphone.fragments.AboutFragment;
 import org.linphone.fragments.AccountPreferencesFragment;
 import org.linphone.fragments.DialerFragment;
 import org.linphone.fragments.EmptyFragment;
@@ -401,9 +400,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             case ACCOUNT_SETTINGS:
                 fragment = new AccountPreferencesFragment();
                 break;
-            case ABOUT:
-                fragment = new AboutFragment();
-                break;
             case EMPTY:
                 fragment = new EmptyFragment();
                 break;
@@ -513,7 +509,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
                 }
 
                 if (newFragmentType == FragmentsAvailable.DIALER
-                        || newFragmentType == FragmentsAvailable.ABOUT
                         || newFragmentType == FragmentsAvailable.SETTINGS
                         || newFragmentType == FragmentsAvailable.ACCOUNT_SETTINGS
                         || newFragmentType == FragmentsAvailable.CREATE_CHAT
@@ -633,10 +628,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         extras.putBoolean("EditOnClick", true);
         extras.putString("SipAddress", sipAddress);
         changeCurrentFragment(FragmentsAvailable.CONTACTS_LIST, extras);
-    }
-
-    public void displayAbout() {
-        changeCurrentFragment(FragmentsAvailable.ABOUT, null);
     }
 
     public void displayContactsForEdition(String sipAddress, String displayName) {
@@ -865,9 +856,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             case ACCOUNT_SETTINGS:
                 hideTabBar(true);
                 mTopBar.setVisibility(View.VISIBLE);
-                break;
-            case ABOUT:
-                hideTabBar(true);
                 break;
             case CHAT_LIST:
             case CREATE_CHAT:
@@ -1362,7 +1350,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             // Prevent fragmentContainer2 to be visible when rotating the device
             LinearLayout ll = findViewById(R.id.fragmentContainer2);
             if (currentFragment == FragmentsAvailable.DIALER
-                    || currentFragment == FragmentsAvailable.ABOUT
                     || currentFragment == FragmentsAvailable.SETTINGS
                     || currentFragment == FragmentsAvailable.ACCOUNT_SETTINGS) {
                 ll.setVisibility(View.GONE);
@@ -1566,7 +1553,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         if (getResources().getBoolean(R.bool.enable_in_app_purchase)) {
             sideMenuItems.add(getResources().getString(R.string.inapp));
         }
-        sideMenuItems.add(getResources().getString(R.string.menu_about));
         sideMenuContent = findViewById(R.id.side_menu_content);
         sideMenuItemList = findViewById(R.id.item_list);
         menu = findViewById(R.id.side_menu_button);
@@ -1577,9 +1563,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if (sideMenuItemList.getAdapter().getItem(i).toString().equals(getString(R.string.menu_settings))) {
                     LinphoneActivity.instance().displaySettings();
-                }
-                if (sideMenuItemList.getAdapter().getItem(i).toString().equals(getString(R.string.menu_about))) {
-                    LinphoneActivity.instance().displayAbout();
                 }
                 if (sideMenuItemList.getAdapter().getItem(i).toString().equals(getString(R.string.menu_assistant))) {
                     LinphoneActivity.instance().displayAssistant();

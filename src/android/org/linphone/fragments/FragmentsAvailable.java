@@ -28,7 +28,6 @@ public enum FragmentsAvailable {
     CONTACTS_LIST,
     CONTACT_DETAIL,
     CONTACT_EDITOR,
-    ABOUT,
     ACCOUNT_SETTINGS,
     SETTINGS,
     CHAT_LIST,
