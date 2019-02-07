@@ -57,9 +57,9 @@
     <string name="app_description">the <i>libre</i> SIP client</string>
 
     <!-- Assistant -->
-    <string name="welcome">Welcome</string>
-    <string name="assistant">Assistant</string>
-    <string name="assistant_create_account">Create account</string>
+    <string name="welcome">February 7th</string>
+    <string name="assistant">You must delete some Uis. But keep phone capability.</string>
+    <string name="assistant_creatoote_account">Create account</string>
     <string name="assistant_link_account">Link account</string>
     <string name="assistant_continue">Continue</string>
     <string name="assistant_activate">Activate your account</string>
