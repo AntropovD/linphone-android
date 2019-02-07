@@ -1,0 +1,8 @@
+export STUDIO_HOME=/snap/android-studio/current/android-studio
+export ANDROID_HOME=/home/dmitry/Android/Sdk
+export ANDROID_NDK=${ANDROID_HOME}/ndk-bundle
+export JAVA_HOME=${STUDIO_HOME}/jre
+export PATH="${PATH}:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/tools:${ANDROID_HOME}/ndk-bundle"
+GRADLE_HOME=$(realpath -m ../gradle/gradle-4.10.1)
+export PATH="$PATH:${GRADLE_HOME}/bin"
+
