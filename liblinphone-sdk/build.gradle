@@ -8,7 +8,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.0'
+        classpath 'com.android.tools.build:gradle:3.3.0'
     }
 }
 
@@ -76,6 +76,7 @@ android {
         buildToolsVersion "28.0.0"
         multiDexEnabled true
         setProperty("archivesBaseName", "liblinphone-sdk")
+        targetSdkVersion 28
     }
 
     // Signing
