@@ -82,7 +82,7 @@ excludePackage.add('**/LICENSE.txt')
 android {
     defaultConfig {
         compileSdkVersion 28
-        buildToolsVersion "28.0.0"
+        buildToolsVersion "28.0.3"
         applicationId getPackageName()
         multiDexEnabled true
 
