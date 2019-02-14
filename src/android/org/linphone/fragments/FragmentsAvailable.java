@@ -29,13 +29,7 @@ public enum FragmentsAvailable {
     CONTACT_DETAIL,
     CONTACT_EDITOR,
     ACCOUNT_SETTINGS,
-    SETTINGS,
-    CHAT_LIST,
-    CHAT,
-    CREATE_CHAT,
-    INFO_GROUP_CHAT,
-    GROUP_CHAT,
-    MESSAGE_IMDN;
+    SETTINGS;
 
     public boolean shouldAddItselfToTheRightOf(FragmentsAvailable fragment) {
         switch (this) {
@@ -47,15 +41,6 @@ public enum FragmentsAvailable {
 
             case CONTACT_EDITOR:
                 return fragment == CONTACTS_LIST || fragment == CONTACT_DETAIL || fragment == CONTACT_EDITOR;
-
-            case CHAT:
-                return fragment == CHAT_LIST || fragment == CHAT;
-
-            case GROUP_CHAT:
-                return fragment == CHAT_LIST || fragment == GROUP_CHAT;
-
-            case MESSAGE_IMDN:
-                return fragment == GROUP_CHAT || fragment == MESSAGE_IMDN;
 
             default:
                 return false;

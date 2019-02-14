@@ -71,11 +71,6 @@ import org.linphone.assistant.RemoteProvisioningLoginActivity;
 import org.linphone.call.CallActivity;
 import org.linphone.call.CallIncomingActivity;
 import org.linphone.call.CallOutgoingActivity;
-import org.linphone.chat.ChatCreationFragment;
-import org.linphone.chat.ChatListFragment;
-import org.linphone.chat.GroupChatFragment;
-import org.linphone.chat.GroupInfoFragment;
-import org.linphone.chat.ImdnFragment;
 import org.linphone.compatibility.Compatibility;
 import org.linphone.contacts.ContactAddress;
 import org.linphone.contacts.ContactDetailsFragment;
@@ -131,9 +126,9 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
     private static LinphoneActivity instance;
 
     private StatusFragment statusFragment;
-    private TextView missedCalls, missedChats;
-    private RelativeLayout contacts, history, dialer, chat;
-    private View contacts_selected, history_selected, dialer_selected, chat_selected;
+    private TextView missedCalls;
+    private RelativeLayout contacts, history, dialer;
+    private View contacts_selected, history_selected, dialer_selected;
     private RelativeLayout mTopBar;
     private ImageView cancel;
     private FragmentsAvailable pendingFragmentTransaction, currentFragment, leftFragment;
@@ -223,11 +218,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
 
         mListener = new CoreListenerStub() {
             @Override
-            public void onMessageReceived(Core lc, ChatRoom cr, ChatMessage message) {
-                displayMissedChats(LinphoneManager.getInstance().getUnreadMessageCount());
-            }
-
-            @Override
             public void onRegistrationStateChanged(Core lc, ProxyConfig proxy, RegistrationState state, String smessage) {
                 AuthInfo authInfo = lc.findAuthInfo(proxy.getRealm(), proxy.getIdentityAddress().getUsername(), proxy.getDomain());
 
@@ -311,16 +301,12 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         contacts.setOnClickListener(this);
         dialer = findViewById(R.id.dialer);
         dialer.setOnClickListener(this);
-        chat = findViewById(R.id.chat);
-        chat.setOnClickListener(this);
 
         history_selected = findViewById(R.id.history_select);
         contacts_selected = findViewById(R.id.contacts_select);
         dialer_selected = findViewById(R.id.dialer_select);
-        chat_selected = findViewById(R.id.chat_select);
 
         missedCalls = findViewById(R.id.missed_calls);
-        missedChats = findViewById(R.id.missed_chats);
     }
 
     public boolean isTablet() {
@@ -356,8 +342,7 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
     }
 
     private void changeCurrentFragment(FragmentsAvailable newFragmentType, Bundle extras) {
-        if (newFragmentType == currentFragment && newFragmentType != FragmentsAvailable.CHAT
-                && newFragmentType != FragmentsAvailable.GROUP_CHAT) {
+        if (newFragmentType == currentFragment) {
             return;
         }
 
@@ -403,22 +388,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             case EMPTY:
                 fragment = new EmptyFragment();
                 break;
-            case CHAT_LIST:
-                fragment = new ChatListFragment();
-                break;
-            case CREATE_CHAT:
-                checkAndRequestWriteContactsPermission();
-                fragment = new ChatCreationFragment();
-                break;
-            case INFO_GROUP_CHAT:
-                fragment = new GroupInfoFragment();
-                break;
-            case GROUP_CHAT:
-                fragment = new GroupChatFragment();
-                break;
-            case MESSAGE_IMDN:
-                fragment = new ImdnFragment();
-                break;
             default:
                 break;
         }
@@ -434,9 +403,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
                     case CONTACTS_LIST:
                         ((ContactsListFragment) fragment).displayFirstContact();
                         break;
-                    case CHAT_LIST:
-                        ((ChatListFragment) fragment).displayFirstChat();
-                        break;
                 }
             } else {
                 changeFragment(fragment, newFragmentType);
@@ -451,7 +417,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
 
         if (newFragmentType != FragmentsAvailable.DIALER
                 && newFragmentType != FragmentsAvailable.CONTACTS_LIST
-                && newFragmentType != FragmentsAvailable.CHAT_LIST
                 && newFragmentType != FragmentsAvailable.HISTORY_LIST) {
             transaction.addToBackStack(newFragmentType.toString());
         } else {
@@ -496,11 +461,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
                 }
                 transaction.replace(R.id.fragmentContainer2, newFragment);
                 leftFragment = currentFragment;
-
-                if (newFragmentType == FragmentsAvailable.GROUP_CHAT && leftFragment != FragmentsAvailable.CHAT_LIST) {
-                    leftFragment = FragmentsAvailable.CHAT_LIST;
-                    transaction.replace(R.id.fragmentContainer, new ChatListFragment());
-                }
             } else {
                 if (newFragmentType == FragmentsAvailable.EMPTY) {
                     ll.setVisibility(View.VISIBLE);
@@ -510,9 +470,7 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
 
                 if (newFragmentType == FragmentsAvailable.DIALER
                         || newFragmentType == FragmentsAvailable.SETTINGS
-                        || newFragmentType == FragmentsAvailable.ACCOUNT_SETTINGS
-                        || newFragmentType == FragmentsAvailable.CREATE_CHAT
-                        || newFragmentType == FragmentsAvailable.INFO_GROUP_CHAT) {
+                        || newFragmentType == FragmentsAvailable.ACCOUNT_SETTINGS) {
                     ll.setVisibility(View.GONE);
                 } else {
                     ll.setVisibility(View.VISIBLE);
@@ -535,7 +493,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             if (newFragmentType == FragmentsAvailable.DIALER
                     || newFragmentType == FragmentsAvailable.SETTINGS
                     || newFragmentType == FragmentsAvailable.CONTACTS_LIST
-                    || newFragmentType == FragmentsAvailable.CHAT_LIST
                     || newFragmentType == FragmentsAvailable.HISTORY_LIST) {
                 try {
                     getFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -642,152 +599,8 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         startActivity(new Intent(LinphoneActivity.this, AssistantActivity.class));
     }
 
-
     public void displayInapp() {
         startActivity(new Intent(LinphoneActivity.this, InAppPurchaseActivity.class));
-    }
-
-    private void displayChat(String sipUri, String message, String fileUri, String pictureUri, String thumbnailUri, String displayName, Address lAddress) {
-        Bundle extras = new Bundle();
-        extras.putString("SipUri", sipUri);
-
-        if (message != null)
-            extras.putString("messageDraft", message);
-        if (fileUri != null)
-            extras.putString("fileSharedUri", fileUri);
-        if (sipUri != null && lAddress.getDisplayName() != null) {
-            extras.putString("DisplayName", displayName);
-            extras.putString("PictureUri", pictureUri);
-            extras.putString("ThumbnailUri", thumbnailUri);
-        }
-
-        if (sipUri == null) {
-            changeCurrentFragment(FragmentsAvailable.CREATE_CHAT, extras);
-        } else {
-            changeCurrentFragment(FragmentsAvailable.GROUP_CHAT, extras);
-        }
-    }
-
-    public void goToChatCreator(String address, ArrayList<ContactAddress> selectedContacts, String subject, boolean isGoBack, Bundle shareInfos) {
-        if (currentFragment == FragmentsAvailable.INFO_GROUP_CHAT && isGoBack) {
-            getFragmentManager().popBackStackImmediate();
-            getFragmentManager().popBackStackImmediate();
-        }
-        Bundle extras = new Bundle();
-        extras.putSerializable("selectedContacts", selectedContacts);
-        extras.putString("subject", subject);
-        extras.putString("groupChatRoomAddress", address);
-
-        if (shareInfos != null) {
-            if (shareInfos.getString("fileSharedUri") != null)
-                extras.putString("fileSharedUri", shareInfos.getString("fileSharedUri"));
-            if (shareInfos.getString("messageDraft") != null)
-                extras.putString("messageDraft", shareInfos.getString("messageDraft"));
-        }
-
-        changeCurrentFragment(FragmentsAvailable.CREATE_CHAT, extras);
-    }
-
-    public void goToChat(String sipUri, Bundle shareInfos, String localIdentity) {
-        Bundle extras = new Bundle();
-        extras.putString("SipUri", sipUri);
-        extras.putString("LocalIdentity", localIdentity);
-
-        if (shareInfos != null) {
-            if (shareInfos.getString("fileSharedUri") != null)
-                extras.putString("fileSharedUri", shareInfos.getString("fileSharedUri"));
-            if (shareInfos.getString("messageDraft") != null)
-                extras.putString("messageDraft", shareInfos.getString("messageDraft"));
-        }
-
-        if (isTablet()) {
-            Fragment fragment2 = getFragmentManager().findFragmentById(R.id.fragmentContainer2);
-            if (fragment2 != null && fragment2.isVisible() && currentFragment == FragmentsAvailable.GROUP_CHAT && !emptyFragment) {
-                GroupChatFragment chatFragment = (GroupChatFragment) fragment2;
-                chatFragment.changeDisplayedChat(sipUri);
-            } else {
-                changeCurrentFragment(FragmentsAvailable.GROUP_CHAT, extras);
-            }
-        } else {
-            changeCurrentFragment(FragmentsAvailable.GROUP_CHAT, extras);
-        }
-
-        LinphoneManager.getInstance().updateUnreadCountForChatRoom(sipUri, 0);
-        displayMissedChats(LinphoneManager.getInstance().getUnreadMessageCount());
-    }
-
-    public void goToChatGroupInfos(String address, ArrayList<ContactAddress> contacts, String subject, boolean isEditionEnabled, boolean isGoBack, Bundle shareInfos) {
-        if (currentFragment == FragmentsAvailable.CREATE_CHAT && isGoBack) {
-            getFragmentManager().popBackStackImmediate();
-            getFragmentManager().popBackStackImmediate();
-        }
-        Bundle extras = new Bundle();
-        extras.putString("groupChatRoomAddress", address);
-        extras.putBoolean("isEditionEnabled", isEditionEnabled);
-        extras.putSerializable("ContactAddress", contacts);
-        extras.putString("subject", subject);
-
-        if (shareInfos != null) {
-            if (shareInfos.getString("fileSharedUri") != null)
-                extras.putString("fileSharedUri", shareInfos.getString("fileSharedUri"));
-            if (shareInfos.getString("messageDraft") != null)
-                extras.putString("messageDraft", shareInfos.getString("messageDraft"));
-        }
-
-        changeCurrentFragment(FragmentsAvailable.INFO_GROUP_CHAT, extras);
-    }
-
-    public void goToChatMessageImdnInfos(String sipUri, String messageId) {
-        Bundle extras = new Bundle();
-        extras.putSerializable("SipUri", sipUri);
-        extras.putString("MessageId", messageId);
-        changeCurrentFragment(FragmentsAvailable.MESSAGE_IMDN, extras);
-    }
-
-    public void goToChatList() {
-        changeCurrentFragment(FragmentsAvailable.CHAT_LIST, null);
-    }
-
-    public void displayChat(String sipUri, String message, String fileUri) {
-        if (getResources().getBoolean(R.bool.disable_chat)) {
-            return;
-        }
-
-        String pictureUri = null;
-        String thumbnailUri = null;
-        String displayName = null;
-
-        Address lAddress = null;
-        if (sipUri != null) {
-            lAddress = LinphoneManager.getLc().interpretUrl(sipUri);
-            if (lAddress == null) return;
-            LinphoneContact contact = ContactsManager.getInstance().findContactFromAddress(lAddress);
-            displayName = contact != null ? contact.getFullName() : null;
-
-            if (contact != null && contact.getPhotoUri() != null) {
-                pictureUri = contact.getPhotoUri().toString();
-                thumbnailUri = contact.getThumbnailUri().toString();
-            }
-        }
-
-        if (currentFragment == FragmentsAvailable.CHAT_LIST || currentFragment == FragmentsAvailable.GROUP_CHAT) {
-            Fragment fragment2 = getFragmentManager().findFragmentById(R.id.fragmentContainer2);
-            if (fragment2 != null && fragment2.isVisible() && currentFragment == FragmentsAvailable.GROUP_CHAT && !emptyFragment) {
-                GroupChatFragment chatFragment = (GroupChatFragment) fragment2;
-                chatFragment.changeDisplayedChat(sipUri);
-            } else {
-                displayChat(sipUri, message, fileUri, pictureUri, thumbnailUri, displayName, lAddress);
-            }
-        } else {
-            if (isTablet()) {
-                changeCurrentFragment(FragmentsAvailable.CHAT_LIST, null);
-            } else {
-                displayChat(sipUri, message, fileUri, pictureUri, thumbnailUri, displayName, lAddress);
-            }
-        }
-
-        LinphoneManager.getInstance().updateUnreadCountForChatRoom(sipUri, 0);
-        displayMissedChats(LinphoneManager.getInstance().getUnreadMessageCount());
     }
 
     @Override
@@ -806,9 +619,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         } else if (id == R.id.dialer) {
             changeCurrentFragment(FragmentsAvailable.DIALER, null);
             dialer_selected.setVisibility(View.VISIBLE);
-        } else if (id == R.id.chat) {
-            changeCurrentFragment(FragmentsAvailable.CHAT_LIST, null);
-            chat_selected.setVisibility(View.VISIBLE);
         } else if (id == R.id.cancel) {
             hideTopBar();
             displayDialer();
@@ -819,7 +629,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         history_selected.setVisibility(View.GONE);
         contacts_selected.setVisibility(View.GONE);
         dialer_selected.setVisibility(View.GONE);
-        chat_selected.setVisibility(View.GONE);
     }
 
     public void hideTabBar(Boolean hide) {
@@ -857,14 +666,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
                 hideTabBar(true);
                 mTopBar.setVisibility(View.VISIBLE);
                 break;
-            case CHAT_LIST:
-            case CREATE_CHAT:
-            case GROUP_CHAT:
-            case INFO_GROUP_CHAT:
-            case MESSAGE_IMDN:
-            case CHAT:
-                chat_selected.setVisibility(View.VISIBLE);
-                break;
         }
     }
 
@@ -901,9 +702,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         return statusFragment;
     }
 
-    public void refreshMissedChatCountDisplay() {
-        displayMissedChats(LinphoneManager.getInstance().getUnreadMessageCount());
-    }
 
     public void displayMissedCalls(final int missedCallsCount) {
         if (missedCallsCount > 0) {
@@ -913,16 +711,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             if (LinphoneManager.isInstanciated()) LinphoneManager.getLc().resetMissedCallsCount();
             missedCalls.clearAnimation();
             missedCalls.setVisibility(View.GONE);
-        }
-    }
-
-    private void displayMissedChats(final int missedChatCount) {
-        if (missedChatCount > 0) {
-            missedChats.setText(missedChatCount + "");
-            missedChats.setVisibility(View.VISIBLE);
-        } else {
-            missedChats.clearAnimation();
-            missedChats.setVisibility(View.GONE);
         }
     }
 
@@ -1362,7 +1150,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             isTrialAccount();
         }
 
-        displayMissedChats(LinphoneManager.getInstance().getUnreadMessageCount());
         displayMissedCalls(LinphoneManager.getLc().getMissedCallsCount());
 
         LinphoneManager.getInstance().changeStatusToOnline();
@@ -1385,11 +1172,9 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         Intent intent = getIntent();
 
         if (intent.getStringExtra("msgShared") != null) {
-            displayChat(null, intent.getStringExtra("msgShared"), null);
             intent.putExtra("msgShared", "");
         }
         if (intent.getStringExtra("fileShared") != null && intent.getStringExtra("fileShared") != "") {
-            displayChat(null, null, intent.getStringExtra("fileShared"));
             intent.putExtra("fileShared", "");
         }
         isOnBackground = false;
@@ -1439,16 +1224,7 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             }
         }
         Bundle extras = intent.getExtras();
-        if (extras != null && extras.getBoolean("GoToChat", false)) {
-            String sipUri = extras.getString("ChatContactSipUri");
-            String localIdentity = extras.getString("LocalIdentity");
-            intent.putExtra("DoNotGoToCallActivity", true);
-            if (sipUri == null) {
-                goToChatList();
-            } else {
-                goToChat(sipUri, extras, localIdentity);
-            }
-        } else if (extras != null && extras.getBoolean("GoToHistory", false)) {
+        if (extras != null && extras.getBoolean("GoToHistory", false)) {
             intent.putExtra("DoNotGoToCallActivity", true);
             changeCurrentFragment(FragmentsAvailable.HISTORY_LIST, null);
         } else if (extras != null && extras.getBoolean("GoToInapp", false)) {
@@ -1513,7 +1289,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
                 case DIALER:
                 case CONTACTS_LIST:
                 case HISTORY_LIST:
-                case CHAT_LIST:
                     boolean isBackgroundModeActive = LinphonePreferences.instance().isBackgroundModeEnabled();
                     if (!isBackgroundModeActive) {
                         stopService(new Intent(Intent.ACTION_MAIN).setClass(this, LinphoneService.class));
@@ -1522,9 +1297,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
                         return true;
                     }
                     break;
-                case GROUP_CHAT:
-                    LinphoneActivity.instance().goToChatList();
-                    return true;
                 default:
                     break;
             }

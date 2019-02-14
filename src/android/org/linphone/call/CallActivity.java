@@ -380,7 +380,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
 
         chat = findViewById(R.id.chat);
         chat.setOnClickListener(this);
-        missedChats = findViewById(R.id.missed_chats);
 
         //Others
 

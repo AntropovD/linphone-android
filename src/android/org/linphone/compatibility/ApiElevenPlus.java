@@ -58,7 +58,6 @@ public class ApiElevenPlus {
                 .setContentTitle(title)
                 .setContentText(msg)
                 .setContentIntent(intent)
-                .setSmallIcon(R.drawable.chat)
                 .setAutoCancel(true)
                 .setDefaults(
                         Notification.DEFAULT_LIGHTS
