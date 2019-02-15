@@ -108,7 +108,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
     private Handler mControlsHandler = new Handler();
     private Runnable mControls;
     private ImageView switchCamera;
-    private TextView missedChats;
     private RelativeLayout mActiveCallHeader, sideMenuContent, avatar_layout;
     private ImageView pause, hangUp, dialer, video, micro, speaker, options, addCall, transfer, conference, conferenceStatus, contactPicture;
     private ImageView audioRoute, routeSpeaker, routeEarpiece, routeBluetooth, menu, chat;
@@ -178,11 +177,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
         mDecoderTexts = new HashMap<>();
 
         mListener = new CoreListenerStub() {
-            @Override
-            public void onMessageReceived(Core lc, ChatRoom cr, ChatMessage message) {
-                displayMissedChats();
-            }
-
             @Override
             public void onCallStateChanged(Core lc, final Call call, Call.State state, String message) {
                 if (LinphoneManager.getLc().getCallsNb() == 0) {
@@ -378,9 +372,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
         numpad = findViewById(R.id.numpad);
         numpad.getBackground().setAlpha(240);
 
-        chat = findViewById(R.id.chat);
-        chat.setOnClickListener(this);
-
         //Others
 
         //Active Call
@@ -527,7 +518,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
         refreshInCallActions();
         refreshCallList(getResources());
         enableAndRefreshInCallActions();
-        displayMissedChats();
     }
 
     public void setSpeakerEnabled(boolean enabled) {
@@ -1560,18 +1550,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
             conferenceList.setVisibility(View.VISIBLE);
         } else {
             conferenceList.setVisibility(View.GONE);
-        }
-    }
-
-    private void displayMissedChats() {
-        int count = LinphoneManager.getInstance().getUnreadMessageCount();
-
-        if (count > 0) {
-            missedChats.setText(count + "");
-            missedChats.setVisibility(View.VISIBLE);
-        } else {
-            missedChats.clearAnimation();
-            missedChats.setVisibility(View.GONE);
         }
     }
 
