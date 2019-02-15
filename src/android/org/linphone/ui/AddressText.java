@@ -27,13 +27,11 @@ import android.widget.EditText;
 
 import org.linphone.LinphoneManager.AddressType;
 import org.linphone.R;
-import org.linphone.fragments.DialerFragment;
 
 public class AddressText extends EditText implements AddressType {
 
     private String displayedName;
     private Paint mTestPaint;
-    private DialerFragment dialer;
 
     public AddressText(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -68,10 +66,6 @@ public class AddressText extends EditText implements AddressType {
         clearDisplayedName();
 
         refitText(getWidth(), getHeight());
-
-        if (dialer != null) {
-            dialer.enableDisableAddContact();
-        }
 
         super.onTextChanged(text, start, before, after);
     }
@@ -124,9 +118,5 @@ public class AddressText extends EditText implements AddressType {
 
         refitText(parentWidth, height);
         setMeasuredDimension(parentWidth, height);
-    }
-
-    public void setDialerFragment(DialerFragment dialerFragment) {
-        dialer = dialerFragment;
     }
 }

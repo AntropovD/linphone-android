@@ -75,8 +75,6 @@ import org.linphone.core.Call.State;
 import org.linphone.core.CallListenerStub;
 import org.linphone.core.CallParams;
 import org.linphone.core.CallStats;
-import org.linphone.core.ChatMessage;
-import org.linphone.core.ChatRoom;
 import org.linphone.core.Core;
 import org.linphone.core.CoreListenerStub;
 import org.linphone.core.MediaEncryption;
@@ -87,7 +85,6 @@ import org.linphone.fragments.StatusFragment;
 import org.linphone.mediastream.Log;
 import org.linphone.mediastream.video.capture.hwconf.AndroidCameraConfiguration;
 import org.linphone.receivers.BluetoothManager;
-import org.linphone.ui.Numpad;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -109,8 +106,8 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
     private Runnable mControls;
     private ImageView switchCamera;
     private RelativeLayout mActiveCallHeader, sideMenuContent, avatar_layout;
-    private ImageView pause, hangUp, dialer, video, micro, speaker, options, addCall, transfer, conference, conferenceStatus, contactPicture;
-    private ImageView audioRoute, routeSpeaker, routeEarpiece, routeBluetooth, menu, chat;
+    private ImageView pause, hangUp, video, micro, speaker, options, addCall, transfer, conference, conferenceStatus, contactPicture;
+    private ImageView audioRoute, routeSpeaker, routeEarpiece, routeBluetooth, menu;
     private LinearLayout mNoCurrentCall, callInfo, mCallPaused;
     private ProgressBar videoProgress;
     private StatusFragment status;
@@ -118,7 +115,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
     private CallVideoFragment videoCallFragment;
     private boolean isSpeakerEnabled = false, isMicMuted = false, isTransferAllowed, isVideoAsk;
     private LinearLayout mControlsLayout;
-    private Numpad numpad;
     private int cameraNumber;
     private CountDownTimer timer;
     private boolean isVideoCallPaused = false;
@@ -366,14 +362,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
         hangUp = findViewById(R.id.hang_up);
         hangUp.setOnClickListener(this);
 
-        dialer = findViewById(R.id.dialer);
-        dialer.setOnClickListener(this);
-
-        numpad = findViewById(R.id.numpad);
-        numpad.getBackground().setAlpha(240);
-
-        //Others
-
         //Active Call
         callInfo = findViewById(R.id.active_call_info);
 
@@ -617,7 +605,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
         }
         transfer.setEnabled(true);
         pause.setEnabled(true);
-        dialer.setEnabled(true);
     }
 
     public void updateStatusFragment(StatusFragment statusFragment) {
@@ -659,8 +646,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
             pauseOrResumeCall(LinphoneManager.getLc().getCurrentCall());
         } else if (id == R.id.hang_up) {
             hangUp();
-        } else if (id == R.id.dialer) {
-            hideOrDisplayNumpad();
         } else if (id == R.id.chat) {
             goToChatList();
         } else if (id == R.id.conference) {
@@ -971,13 +956,11 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
         if (isVideoEnabled(LinphoneManager.getLc().getCurrentCall()) && mControlsHandler != null) {
             mControlsHandler.postDelayed(mControls = new Runnable() {
                 public void run() {
-                    hideNumpad();
                     video.setEnabled(true);
                     transfer.setVisibility(View.INVISIBLE);
                     addCall.setVisibility(View.INVISIBLE);
                     conference.setVisibility(View.INVISIBLE);
                     displayVideoCall(false);
-                    numpad.setVisibility(View.GONE);
                     options.setImageResource(R.drawable.options_default);
                 }
             }, SECONDS_BEFORE_HIDING_CONTROLS);
@@ -989,28 +972,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
             mControlsHandler.removeCallbacks(mControls);
         }
         mControls = null;
-    }
-
-    private void hideNumpad() {
-        if (numpad == null || numpad.getVisibility() != View.VISIBLE) {
-            return;
-        }
-
-        dialer.setImageResource(R.drawable.footer_dialer);
-        numpad.setVisibility(View.GONE);
-    }
-
-    private void hideOrDisplayNumpad() {
-        if (numpad == null) {
-            return;
-        }
-
-        if (numpad.getVisibility() == View.VISIBLE) {
-            hideNumpad();
-        } else {
-            dialer.setImageResource(R.drawable.dialer_alt_back);
-            numpad.setVisibility(View.VISIBLE);
-        }
     }
 
     private void hideOrDisplayAudioRoutes() {
