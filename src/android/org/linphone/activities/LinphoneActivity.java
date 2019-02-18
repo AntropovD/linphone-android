@@ -78,6 +78,8 @@ import org.linphone.contacts.ContactPicked;
 import org.linphone.contacts.ContactsListFragment;
 import org.linphone.contacts.ContactsManager;
 import org.linphone.contacts.LinphoneContact;
+import org.linphone.core.AccountCreator;
+import org.linphone.core.AccountCreatorListener;
 import org.linphone.core.Address;
 import org.linphone.core.AuthInfo;
 import org.linphone.core.Call;
@@ -110,7 +112,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-public class LinphoneActivity extends LinphoneGenericActivity implements OnClickListener, ContactPicked, ActivityCompat.OnRequestPermissionsResultCallback {
+public class LinphoneActivity extends LinphoneGenericActivity implements OnClickListener, ContactPicked, ActivityCompat.OnRequestPermissionsResultCallback, AccountCreatorListener{
     private static final int SETTINGS_ACTIVITY = 123;
     private static final int CALL_ACTIVITY = 19;
     private static final int PERMISSIONS_REQUEST_OVERLAY = 206;
@@ -281,6 +283,8 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             LinphoneManager.getLc().setDeviceRotation(rotation);
             onNewIntent(getIntent());
         }
+
+        linphoneLogIn();
     }
 
     private void initButtons() {
@@ -738,6 +742,101 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
     }
 
     private int mAlwaysChangingPhoneAngle = -1;
+
+    public void linphoneLogIn() {
+        String login = "antropovd";
+        String password = "***";
+
+        AccountCreator accountCreator = LinphoneManager.getLc().createAccountCreator(LinphonePreferences.instance().getXmlrpcUrl());
+        accountCreator.setUsername(login);
+        accountCreator.setPassword(password);
+
+        LinphoneManager.getLc().getConfig().loadFromXmlFile(LinphoneManager.getInstance().getmDynamicConfigFile());
+        configureProxyConfig(accountCreator);
+    }
+
+    public void configureProxyConfig(AccountCreator accountCreator) {
+        Core lc = LinphoneManager.getLc();
+        ProxyConfig proxyConfig = lc.createProxyConfig();
+        AuthInfo authInfo;
+
+        String identity = proxyConfig.getIdentityAddress().asStringUriOnly();
+        if (identity == null || accountCreator.getUsername() == null) {
+            LinphoneUtils.displayErrorAlert(getString(R.string.error), this);
+            return;
+        }
+        identity = identity.replace("?", accountCreator.getUsername());
+        Address addr = Factory.instance().createAddress(identity);
+        addr.setDisplayName(accountCreator.getUsername());
+        proxyConfig.edit();
+
+        proxyConfig.setIdentityAddress(addr);
+
+        if (accountCreator.getPhoneNumber() != null && accountCreator.getPhoneNumber().length() > 0)
+            proxyConfig.setDialPrefix(org.linphone.core.Utils.getPrefixFromE164(accountCreator.getPhoneNumber()));
+
+        proxyConfig.done();
+
+        authInfo = Factory.instance().createAuthInfo(
+                accountCreator.getUsername(),
+                null,
+                accountCreator.getPassword(),
+                accountCreator.getHa1(),
+                proxyConfig.getRealm(),
+                proxyConfig.getDomain());
+
+        lc.addProxyConfig(proxyConfig);
+        lc.addAuthInfo(authInfo);
+        lc.setDefaultProxyConfig(proxyConfig);
+
+        if (LinphonePreferences.instance() != null)
+            LinphonePreferences.instance().setPushNotificationEnabled(true);
+
+        if (ContactsManager.getInstance() != null)
+            ContactsManager.getInstance().fetchContactsAsync();
+
+        LinphoneManager.getInstance().subscribeFriendList(getResources().getBoolean(R.bool.use_friendlist_subscription));
+    }
+
+    @Override
+    public void onActivateAccount(AccountCreator creator, AccountCreator.Status status, String resp) {
+    }
+
+    @Override
+    public void onActivateAlias(AccountCreator creator, AccountCreator.Status status, String resp) {
+    }
+
+    @Override
+    public void onIsAccountLinked(AccountCreator creator, AccountCreator.Status status, String resp) {
+    }
+
+    @Override
+    public void onLinkAccount(AccountCreator creator, AccountCreator.Status status, String resp) {
+    }
+
+    @Override
+    public void onIsAliasUsed(AccountCreator creator, AccountCreator.Status status, String resp) {
+    }
+
+    @Override
+    public void onIsAccountActivated(AccountCreator creator, AccountCreator.Status status, String resp) {
+    }
+
+    @Override
+    public void onIsAccountExist(AccountCreator creator, AccountCreator.Status status, String resp) {
+    }
+
+    @Override
+    public void onUpdateAccount(AccountCreator creator, AccountCreator.Status status, String resp) {
+    }
+
+    @Override
+    public void onRecoverAccount(AccountCreator creator, AccountCreator.Status status, String resp) {
+    }
+
+    @Override
+    public void onCreateAccount(AccountCreator creator, AccountCreator.Status status, String resp) {
+    }
 
     private class LocalOrientationEventListener extends OrientationEventListener {
         public LocalOrientationEventListener(Context context) {
