@@ -716,6 +716,10 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
     private int mAlwaysChangingPhoneAngle = -1;
 
     public void linphoneLogIn() {
+        ProxyConfig proxy = LinphoneManager.getLc().getDefaultProxyConfig();
+        if (proxy != null && proxy.getState() == RegistrationState.Ok)
+            return;
+
         String login = "antropovd_test2";
         String password = "antropovd_test";
 
