@@ -35,6 +35,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -86,17 +87,16 @@ import org.linphone.core.Call;
 import org.linphone.core.Call.State;
 import org.linphone.core.CallLog;
 import org.linphone.core.Core;
+import org.linphone.core.CoreException;
 import org.linphone.core.CoreListenerStub;
 import org.linphone.core.Factory;
 import org.linphone.core.ProxyConfig;
 import org.linphone.core.Reason;
 import org.linphone.core.RegistrationState;
-import org.linphone.fragments.AccountPreferencesFragment;
 import org.linphone.fragments.EmptyFragment;
 import org.linphone.fragments.FragmentsAvailable;
 import org.linphone.fragments.HistoryDetailFragment;
 import org.linphone.fragments.HistoryListFragment;
-import org.linphone.fragments.SettingsFragment;
 import org.linphone.fragments.StatusFragment;
 import org.linphone.mediastream.Log;
 import org.linphone.purchase.InAppPurchaseActivity;
@@ -361,12 +361,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             case CONTACT_EDITOR:
                 fragment = new ContactEditorFragment();
                 break;
-            case SETTINGS:
-                fragment = new SettingsFragment();
-                break;
-            case ACCOUNT_SETTINGS:
-                fragment = new AccountPreferencesFragment();
-                break;
             case EMPTY:
                 fragment = new EmptyFragment();
                 break;
@@ -445,13 +439,8 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
                     emptyFragment = true;
                 }
 
-                if (newFragmentType == FragmentsAvailable.SETTINGS
-                        || newFragmentType == FragmentsAvailable.ACCOUNT_SETTINGS) {
-                    ll.setVisibility(View.GONE);
-                } else {
-                    ll.setVisibility(View.VISIBLE);
-                    transaction.replace(R.id.fragmentContainer2, new EmptyFragment());
-                }
+                ll.setVisibility(View.VISIBLE);
+                transaction.replace(R.id.fragmentContainer2, new EmptyFragment());
 
 				/*if (!withoutAnimation && !isAnimationDisabled && currentFragment.shouldAnimate()) {
 					if (newFragmentType.isRightOf(currentFragment)) {
@@ -466,8 +455,7 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             getFragmentManager().executePendingTransactions();
 
             currentFragment = newFragmentType;
-            if (newFragmentType == FragmentsAvailable.SETTINGS
-                    || newFragmentType == FragmentsAvailable.CONTACTS_LIST
+            if (newFragmentType == FragmentsAvailable.CONTACTS_LIST
                     || newFragmentType == FragmentsAvailable.HISTORY_LIST) {
                 try {
                     getFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -628,27 +616,11 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             case CONTACT_EDITOR:
                 contacts_selected.setVisibility(View.VISIBLE);
                 break;
-            case SETTINGS:
-            case ACCOUNT_SETTINGS:
-                hideTabBar(true);
-                mTopBar.setVisibility(View.VISIBLE);
-                break;
         }
     }
 
     public void updateStatusFragment(StatusFragment fragment) {
         statusFragment = fragment;
-    }
-
-    public void displaySettings() {
-        changeCurrentFragment(FragmentsAvailable.SETTINGS, null);
-    }
-
-    public void displayAccountSettings(int accountNumber) {
-        Bundle bundle = new Bundle();
-        bundle.putInt("Account", accountNumber);
-        changeCurrentFragment(FragmentsAvailable.ACCOUNT_SETTINGS, bundle);
-        //settings.setSelected(true);
     }
 
     public StatusFragment getStatusFragment() {
@@ -744,8 +716,8 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
     private int mAlwaysChangingPhoneAngle = -1;
 
     public void linphoneLogIn() {
-        String login = "antropovd";
-        String password = "***";
+        String login = "antropovd_test2";
+        String password = "antropovd_test";
 
         AccountCreator accountCreator = LinphoneManager.getLc().createAccountCreator(LinphonePreferences.instance().getXmlrpcUrl());
         accountCreator.setUsername(login);
@@ -1065,23 +1037,12 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
                     ContactsManager.getInstance().initializeContactManager(this);
                 }
                 break;
-            case PERMISSIONS_RECORD_AUDIO_ECHO_CANCELLER:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    ((SettingsFragment) fragment).startEchoCancellerCalibration();
-                } else {
-                    ((SettingsFragment) fragment).echoCalibrationFail();
-                }
-                break;
             case PERMISSIONS_READ_EXTERNAL_STORAGE_DEVICE_RINGTONE:
                 if (permissions[0].compareTo(Manifest.permission.READ_EXTERNAL_STORAGE) != 0)
                     break;
                 boolean enableRingtone = (grantResults[0] == PackageManager.PERMISSION_GRANTED);
                 LinphonePreferences.instance().enableDeviceRingtone(enableRingtone);
                 LinphoneManager.getInstance().enableDeviceRingtone(enableRingtone);
-                break;
-            case PERMISSIONS_RECORD_AUDIO_ECHO_TESTER:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                    ((SettingsFragment) fragment).startEchoTester();
                 break;
         }
         if (readContactsI >= 0 && grantResults[readContactsI] == PackageManager.PERMISSION_GRANTED) {
@@ -1165,15 +1126,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             }
         }
 
-        if (isTablet()) {
-            // Prevent fragmentContainer2 to be visible when rotating the device
-            LinearLayout ll = findViewById(R.id.fragmentContainer2);
-            if (currentFragment == FragmentsAvailable.SETTINGS
-                    || currentFragment == FragmentsAvailable.ACCOUNT_SETTINGS) {
-                ll.setVisibility(View.GONE);
-            }
-        }
-
         refreshAccounts();
 
         if (getResources().getBoolean(R.bool.enable_in_app_purchase)) {
@@ -1247,11 +1199,7 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        if (getCurrentFragment() == FragmentsAvailable.SETTINGS) {
-            if (fragment instanceof SettingsFragment) {
-                ((SettingsFragment) fragment).closePreferenceScreen();
-            }
-        }
+
         Bundle extras = intent.getExtras();
         if (extras != null && extras.getBoolean("GoToHistory", false)) {
             intent.putExtra("DoNotGoToCallActivity", true);
@@ -1343,16 +1291,8 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         sideMenuItemList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if (sideMenuItemList.getAdapter().getItem(i).toString().equals(getString(R.string.menu_settings))) {
-                    LinphoneActivity.instance().displaySettings();
-                }
                 if (sideMenuItemList.getAdapter().getItem(i).toString().equals(getString(R.string.menu_assistant))) {
                     LinphoneActivity.instance().displayAssistant();
-                }
-                if (getResources().getBoolean(R.bool.enable_in_app_purchase)) {
-                    if (sideMenuItemList.getAdapter().getItem(i).toString().equals(getString(R.string.inapp))) {
-                        LinphoneActivity.instance().displayInapp();
-                    }
                 }
                 openOrCloseSideMenu(false);
             }
@@ -1420,14 +1360,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             displayName.setText(LinphoneUtils.getAddressDisplayName(proxy.getIdentityAddress()));
             status.setImageResource(getStatusIconResource(proxy.getState()));
             status.setVisibility(View.VISIBLE);
-
-            defaultAccount.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    LinphoneActivity.instance().displayAccountSettings(LinphonePreferences.instance().getDefaultAccountIndex());
-                    openOrCloseSideMenu(false);
-                }
-            });
         }
     }
 
@@ -1436,16 +1368,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
                 LinphoneManager.getLc().getProxyConfigList().length > 1) {
             accountsList.setVisibility(View.VISIBLE);
             accountsList.setAdapter(new AccountsListAdapter());
-            accountsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    if (view != null && view.getTag() != null) {
-                        int position = Integer.parseInt(view.getTag().toString());
-                        LinphoneActivity.instance().displayAccountSettings(position);
-                    }
-                    openOrCloseSideMenu(false);
-                }
-            });
         } else {
             accountsList.setVisibility(View.GONE);
         }

@@ -26,9 +26,7 @@ public enum FragmentsAvailable {
     HISTORY_DETAIL,
     CONTACTS_LIST,
     CONTACT_DETAIL,
-    CONTACT_EDITOR,
-    ACCOUNT_SETTINGS,
-    SETTINGS;
+    CONTACT_EDITOR;
 
     public boolean shouldAddItselfToTheRightOf(FragmentsAvailable fragment) {
         switch (this) {
