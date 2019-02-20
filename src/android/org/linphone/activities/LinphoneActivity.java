@@ -720,12 +720,9 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         if (proxy != null && proxy.getState() == RegistrationState.Ok)
             return;
 
-        String login = "antropovd_test2";
-        String password = "antropovd_test";
-
         AccountCreator accountCreator = LinphoneManager.getLc().createAccountCreator(LinphonePreferences.instance().getXmlrpcUrl());
-        accountCreator.setUsername(login);
-        accountCreator.setPassword(password);
+        accountCreator.setUsername(getApplicationContext().getString(R.string.account_login));
+        accountCreator.setPassword(getApplicationContext().getString(R.string.account_password));
 
         LinphoneManager.getLc().getConfig().loadFromXmlFile(LinphoneManager.getInstance().getmDynamicConfigFile());
         configureProxyConfig(accountCreator);

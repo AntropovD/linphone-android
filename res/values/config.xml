@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="account_login">antropovd_test2</string>
+    <string name="account_password">antropovd_test</string>
 
     <string name="account_linphone_login">wizard15</string>
     <string name="account_linphone_pwd">wizard15</string>
