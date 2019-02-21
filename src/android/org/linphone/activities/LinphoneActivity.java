@@ -29,7 +29,6 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -134,11 +133,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
     private CoreListenerStub mListener;
     private LinearLayout mTabBar;
 
-    private DrawerLayout sideMenu;
-    private RelativeLayout sideMenuContent, quitLayout, defaultAccount;
-    private ListView accountsList, sideMenuItemList;
-    private ImageView menu;
-    private List<String> sideMenuItems;
     private boolean callTransfer = false;
     private boolean isOnBackground = false;
 
@@ -177,7 +171,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         pendingFragmentTransaction = FragmentsAvailable.UNKNOW;
 
         initButtons();
-        initSideMenu();
 
         currentFragment = FragmentsAvailable.EMPTY;
         if (savedInstanceState == null) {
@@ -190,8 +183,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             @Override
             public void onRegistrationStateChanged(Core lc, ProxyConfig proxy, RegistrationState state, String smessage) {
                 AuthInfo authInfo = lc.findAuthInfo(proxy.getRealm(), proxy.getIdentityAddress().getUsername(), proxy.getDomain());
-
-                refreshAccounts();
 
                 if (getResources().getBoolean(R.bool.use_phone_number_validation)
                         && authInfo != null && authInfo.getDomain().equals(getString(R.string.default_domain))) {
@@ -1092,8 +1083,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             }
         }
 
-        refreshAccounts();
-
         displayMissedCalls(LinphoneManager.getLc().getMissedCallsCount());
 
         LinphoneManager.getInstance().changeStatusToOnline();
@@ -1221,49 +1210,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         return super.onKeyDown(keyCode, event);
     }
 
-    //SIDE MENU
-    public void openOrCloseSideMenu(boolean open) {
-        if (open) {
-            sideMenu.openDrawer(sideMenuContent);
-        } else {
-            sideMenu.closeDrawer(sideMenuContent);
-        }
-    }
-
-    public void initSideMenu() {
-        sideMenu = findViewById(R.id.side_menu);
-        sideMenuItems = new ArrayList<>();
-
-        sideMenuItems.add(getResources().getString(R.string.menu_assistant));
-
-        sideMenuContent = findViewById(R.id.side_menu_content);
-        sideMenuItemList = findViewById(R.id.item_list);
-        menu = findViewById(R.id.side_menu_button);
-
-        sideMenuItemList.setAdapter(new ArrayAdapter<>(this, R.layout.side_menu_item_cell, sideMenuItems));
-        initAccounts();
-
-        menu.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                if (sideMenu.isDrawerVisible(Gravity.LEFT)) {
-                    sideMenu.closeDrawer(sideMenuContent);
-                } else {
-                    sideMenu.openDrawer(sideMenuContent);
-                }
-            }
-        });
-
-        quitLayout = findViewById(R.id.side_menu_quit);
-        quitLayout.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                LinphoneActivity.instance().quit();
-            }
-        });
-    }
-
     private int getStatusIconResource(RegistrationState state) {
         try {
             if (state == RegistrationState.Ok) {
@@ -1280,130 +1226,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         }
 
         return R.drawable.led_disconnected;
-    }
-
-    private void displayMainAccount() {
-        defaultAccount.setVisibility(View.VISIBLE);
-        ImageView status = defaultAccount.findViewById(R.id.main_account_status);
-        TextView address = defaultAccount.findViewById(R.id.main_account_address);
-        TextView displayName = defaultAccount.findViewById(R.id.main_account_display_name);
-
-
-        ProxyConfig proxy = LinphoneManager.getLc().getDefaultProxyConfig();
-        if (proxy == null) {
-            displayName.setText(getString(R.string.no_account));
-            status.setVisibility(View.GONE);
-            address.setText("");
-            statusFragment.resetAccountStatus();
-            LinphoneManager.getInstance().subscribeFriendList(false);
-
-            defaultAccount.setOnClickListener(null);
-        } else {
-            address.setText(proxy.getIdentityAddress().asStringUriOnly());
-            displayName.setText(LinphoneUtils.getAddressDisplayName(proxy.getIdentityAddress()));
-            status.setImageResource(getStatusIconResource(proxy.getState()));
-            status.setVisibility(View.VISIBLE);
-        }
-    }
-
-    public void refreshAccounts() {
-        if (LinphoneManager.getLc().getProxyConfigList() != null &&
-                LinphoneManager.getLc().getProxyConfigList().length > 1) {
-            accountsList.setVisibility(View.VISIBLE);
-            accountsList.setAdapter(new AccountsListAdapter());
-        } else {
-            accountsList.setVisibility(View.GONE);
-        }
-        displayMainAccount();
-    }
-
-    private void initAccounts() {
-        accountsList = findViewById(R.id.accounts_list);
-        defaultAccount = findViewById(R.id.default_account);
-    }
-
-    class AccountsListAdapter extends BaseAdapter {
-        List<ProxyConfig> proxy_list;
-
-        AccountsListAdapter() {
-            proxy_list = new ArrayList<>();
-            refresh();
-        }
-
-        public void refresh() {
-            proxy_list = new ArrayList<>();
-            for (ProxyConfig proxyConfig : LinphoneManager.getLc().getProxyConfigList()) {
-                if (proxyConfig != LinphoneManager.getLc().getDefaultProxyConfig()) {
-                    proxy_list.add(proxyConfig);
-                }
-            }
-        }
-
-        public int getCount() {
-            if (proxy_list != null) {
-                return proxy_list.size();
-            } else {
-                return 0;
-            }
-        }
-
-        public Object getItem(int position) {
-            return proxy_list.get(position);
-        }
-
-        public long getItemId(int position) {
-            return position;
-        }
-
-        public View getView(final int position, View convertView, ViewGroup parent) {
-            View view;
-            ProxyConfig lpc = (ProxyConfig) getItem(position);
-            if (convertView != null) {
-                view = convertView;
-            } else {
-                view = getLayoutInflater().inflate(R.layout.side_menu_account_cell, parent, false);
-            }
-
-            ImageView status = view.findViewById(R.id.account_status);
-            TextView address = view.findViewById(R.id.account_address);
-            String sipAddress = lpc.getIdentityAddress().asStringUriOnly();
-
-            address.setText(sipAddress);
-
-            int nbAccounts = LinphonePreferences.instance().getAccountCount();
-            int accountIndex = 0;
-
-            for (int i = 0; i < nbAccounts; i++) {
-                String username = LinphonePreferences.instance().getAccountUsername(i);
-                String domain = LinphonePreferences.instance().getAccountDomain(i);
-                String id = "sip:" + username + "@" + domain;
-                if (id.equals(sipAddress)) {
-                    accountIndex = i;
-                    view.setTag(accountIndex);
-                    break;
-                }
-            }
-            status.setImageResource(getStatusIconResource(lpc.getState()));
-            return view;
-        }
-    }
-
-    //Inapp Purchase
-    private void isTrialAccount() {
-        if (LinphoneManager.getLc().getDefaultProxyConfig() != null && LinphonePreferences.instance().getInappPopupTime() != null) {
-            XmlRpcHelper helper = new XmlRpcHelper();
-            helper.isTrialAccountAsync(new XmlRpcListenerBase() {
-                @Override
-                public void onTrialAccountFetched(boolean isTrial) {
-                    isTrialAccount = isTrial;
-                    getExpirationAccount();
-                }
-
-                @Override
-                public void onError(String error) {
-                }
-            }, LinphonePreferences.instance().getAccountUsername(LinphonePreferences.instance().getDefaultAccountIndex()), LinphonePreferences.instance().getAccountHa1(LinphonePreferences.instance().getDefaultAccountIndex()));
-        }
     }
 
     private void getExpirationAccount() {

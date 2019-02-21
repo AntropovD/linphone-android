@@ -196,7 +196,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
                     }
                 } else if (state == State.Resuming) {
                     if (LinphonePreferences.instance().isVideoEnabled()) {
-                        status.refreshStatusItems(call, isVideoEnabled(call));
                         if (call.getCurrentParams().videoEnabled()) {
                             showVideoView();
                         }
@@ -210,7 +209,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
 
                     if (status != null) {
                         videoProgress.setVisibility(View.GONE);
-                        status.refreshStatusItems(call, isVideoEnabled(call));
                     }
                 } else if (state == State.UpdatedByRemote) {
                     // If the correspondent proposes video while audio call
@@ -234,14 +232,7 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
 
             @Override
             public void onCallEncryptionChanged(Core lc, final Call call, boolean encrypted, String authenticationToken) {
-                if (status != null) {
-                    if (call.getCurrentParams().getMediaEncryption().equals(MediaEncryption.ZRTP) && !call.getAuthenticationTokenVerified()) {
-                        status.showZRTPDialog(call);
-                    }
-                    status.refreshStatusItems(call, call.getCurrentParams().videoEnabled());
-                }
             }
-
         };
 
         if (findViewById(R.id.fragmentContainer) != null) {
@@ -1142,10 +1133,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
 
         refreshIncallUi();
         handleViewIntent();
-
-        if (status != null && status.getisZrtpAsk() && lc != null) {
-            status.showZRTPDialog(lc.getCurrentCall());
-        }
 
         if (!isVideoEnabled(LinphoneManager.getLc().getCurrentCall())) {
             if (!isSpeakerEnabled) {
