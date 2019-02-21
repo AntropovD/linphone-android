@@ -45,8 +45,6 @@ import android.view.WindowManager;
 
 import org.linphone.activities.LinphoneActivity;
 import org.linphone.compatibility.Compatibility;
-import org.linphone.contacts.ContactsManager;
-import org.linphone.contacts.LinphoneContact;
 import org.linphone.core.Address;
 import org.linphone.core.Call;
 import org.linphone.core.Call.State;
@@ -353,14 +351,9 @@ public final class LinphoneService extends Service {
                         body = getString(R.string.missed_calls_notif_body).replace("%i", String.valueOf(missedCallCount));
                     } else {
                         Address address = call.getRemoteAddress();
-                        LinphoneContact c = ContactsManager.getInstance().findContactFromAddress(address);
-                        if (c != null) {
-                            body = c.getFullName();
-                        } else {
-                            body = address.getDisplayName();
-                            if (body == null) {
-                                body = address.asStringUriOnly();
-                            }
+                        body = address.getDisplayName();
+                        if (body == null) {
+                            body = address.asStringUriOnly();
                         }
                     }
 
@@ -413,11 +406,6 @@ public final class LinphoneService extends Service {
 
         if (displayServiceNotification() || (Version.sdkAboveOrEqual(Version.API26_O_80) && intent.getBooleanExtra("ForceStartForeground", false))) {
             startForegroundCompat(NOTIF_ID, mNotif);
-        }
-
-        if (!Version.sdkAboveOrEqual(Version.API26_O_80)
-                || (ContactsManager.getInstance() != null && ContactsManager.getInstance().hasContactsAccess())) {
-            getContentResolver().registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, ContactsManager.getInstance());
         }
 
         if (!mTestDelayElapsed) {
@@ -567,14 +555,8 @@ public final class LinphoneService extends Service {
         Call call = LinphoneManager.getLc().getCalls()[0];
         Address address = call.getRemoteAddress();
 
-        LinphoneContact contact = ContactsManager.getInstance().findContactFromAddress(address);
-        Uri pictureUri = contact != null ? contact.getPhotoUri() : null;
-        Bitmap bm = null;
-        try {
-            bm = MediaStore.Images.Media.getBitmap(getContentResolver(), pictureUri);
-        } catch (Exception e) {
-            bm = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
-        }
+        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
+
         String name = address.getDisplayName() == null ? address.getUsername() : address.getDisplayName();
         Intent notifIntent = new Intent(this, incomingReceivedActivity);
         notifIntent.putExtra("Notification", true);

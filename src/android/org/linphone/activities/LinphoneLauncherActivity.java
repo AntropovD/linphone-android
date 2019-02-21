@@ -32,7 +32,6 @@ import org.linphone.LinphoneService;
 import org.linphone.LinphoneUtils;
 import org.linphone.R;
 import org.linphone.call.CallActivity;
-import org.linphone.contacts.ContactsManager;
 
 import static android.content.Intent.ACTION_MAIN;
 
@@ -74,11 +73,7 @@ public class LinphoneLauncherActivity extends Activity {
                     }
                 }
             } else if (Intent.ACTION_VIEW.equals(action)) {
-                if (LinphoneService.isReady()) {
-                    addressToCall = ContactsManager.getInstance().getAddressOrNumberForAndroidContact(getContentResolver(), intent.getData());
-                } else {
-                    uriToResolve = intent.getData();
-                }
+                uriToResolve = intent.getData();
             }
         }
 
@@ -138,16 +133,6 @@ public class LinphoneLauncherActivity extends Activity {
                             LinphoneManager.getInstance().newOutgoingCall(numberToCall, null);
                         }
                     }
-                }
-                if (uriToResolve != null) {
-                    addressToCall = ContactsManager.getInstance().getAddressOrNumberForAndroidContact(getContentResolver(), uriToResolve);
-                    Log.i("LinphoneLauncher", "Intent has uri to resolve : " + uriToResolve.toString());
-                    uriToResolve = null;
-                }
-                if (addressToCall != null) {
-                    newIntent.putExtra("SipUriOrNumber", addressToCall);
-                    Log.i("LinphoneLauncher", "Intent has address to call : " + addressToCall);
-                    addressToCall = null;
                 }
                 startActivity(newIntent);
                 finish();

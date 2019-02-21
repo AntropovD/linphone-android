@@ -40,8 +40,6 @@ import org.linphone.LinphoneUtils;
 import org.linphone.R;
 import org.linphone.activities.LinphoneActivity;
 import org.linphone.activities.LinphoneGenericActivity;
-import org.linphone.contacts.ContactsManager;
-import org.linphone.contacts.LinphoneContact;
 import org.linphone.core.Address;
 import org.linphone.core.Call;
 import org.linphone.core.Call.State;
@@ -230,13 +228,7 @@ public class CallIncomingActivity extends LinphoneGenericActivity {
 
 
         Address address = mCall.getRemoteAddress();
-        LinphoneContact contact = ContactsManager.getInstance().findContactFromAddress(address);
-        if (contact != null) {
-            LinphoneUtils.setImagePictureFromUri(this, contactPicture, contact.getPhotoUri(), contact.getThumbnailUri());
-            name.setText(contact.getFullName());
-        } else {
-            name.setText(LinphoneUtils.getAddressDisplayName(address));
-        }
+        name.setText(LinphoneUtils.getAddressDisplayName(address));
         number.setText(address.asStringUriOnly());
     }
 

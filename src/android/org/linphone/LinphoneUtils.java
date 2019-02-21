@@ -46,7 +46,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.linphone.compatibility.Compatibility;
-import org.linphone.contacts.ContactsManager;
 import org.linphone.core.AccountCreator;
 import org.linphone.core.Address;
 import org.linphone.core.Call;
@@ -64,7 +63,6 @@ import org.linphone.core.LoggingServiceListener;
 import org.linphone.core.ProxyConfig;
 import org.linphone.mediastream.Log;
 import org.linphone.mediastream.video.capture.hwconf.Hacks;
-import org.linphone.ui.LinphoneMediaScanner;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -264,59 +262,6 @@ public final class LinphoneUtils {
             }
         }
         return null;
-    }
-
-
-    public static void setImagePictureFromUri(Context c, ImageView view, Uri pictureUri, Uri thumbnailUri) {
-        if (pictureUri == null && thumbnailUri == null) {
-            view.setImageBitmap(ContactsManager.getInstance().getDefaultAvatarBitmap());
-            return;
-        }
-        if (pictureUri.getScheme().startsWith("http")) {
-            Bitmap bm = downloadBitmap(pictureUri);
-            if (bm == null) view.setImageResource(R.drawable.avatar);
-            view.setImageBitmap(bm);
-        } else {
-            Bitmap bm = null;
-            try {
-                bm = MediaStore.Images.Media.getBitmap(c.getContentResolver(), pictureUri);
-            } catch (IOException e) {
-                if (thumbnailUri != null) {
-                    try {
-                        bm = MediaStore.Images.Media.getBitmap(c.getContentResolver(), thumbnailUri);
-                    } catch (IOException ie) {
-                    }
-                }
-            }
-            if (bm != null) {
-                view.setImageBitmap(bm);
-            } else {
-                view.setImageBitmap(ContactsManager.getInstance().getDefaultAvatarBitmap());
-            }
-        }
-    }
-
-    public static void setThumbnailPictureFromUri(Context c, ImageView view, Uri tUri) {
-        if (tUri == null) {
-            view.setImageBitmap(ContactsManager.getInstance().getDefaultAvatarBitmap());
-            return;
-        }
-        if (tUri.getScheme().startsWith("http")) {
-            Bitmap bm = downloadBitmap(tUri);
-            if (bm == null) view.setImageResource(R.drawable.avatar);
-            view.setImageBitmap(bm);
-        } else {
-            Bitmap bm = null;
-            try {
-                bm = MediaStore.Images.Media.getBitmap(c.getContentResolver(), tUri);
-            } catch (IOException e) {
-            }
-            if (bm != null) {
-                view.setImageBitmap(bm);
-            } else {
-                view.setImageBitmap(ContactsManager.getInstance().getDefaultAvatarBitmap());
-            }
-        }
     }
 
     public static final List<Call> getCalls(Core lc) {

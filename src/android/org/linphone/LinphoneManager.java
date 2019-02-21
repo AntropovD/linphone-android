@@ -53,8 +53,6 @@ import org.linphone.activities.LinphoneActivity;
 import org.linphone.call.CallActivity;
 import org.linphone.call.CallIncomingActivity;
 import org.linphone.call.CallManager;
-import org.linphone.contacts.ContactsManager;
-import org.linphone.contacts.LinphoneContact;
 import org.linphone.core.AccountCreator;
 import org.linphone.core.AccountCreatorListener;
 import org.linphone.core.Address;
@@ -409,17 +407,6 @@ public class LinphoneManager implements CoreListener, SensorEventListener, Accou
 //		}
         if (to == null) return;
 
-        // If to is only a username, try to find the contact to get an alias if existing
-        if (!to.startsWith("sip:") || !to.contains("@")) {
-            LinphoneContact contact = ContactsManager.getInstance().findContactFromPhoneNumber(to);
-            if (contact != null) {
-                String alias = contact.getPresenceModelForUriOrTel(to);
-                if (alias != null) {
-                    to = alias;
-                }
-            }
-        }
-
         Address lAddress;
         lAddress = mLc.interpretUrl(to); // InterpretUrl does normalizePhoneNumber
         if (lAddress == null) {
@@ -561,7 +548,6 @@ public class LinphoneManager implements CoreListener, SensorEventListener, Accou
 
     public synchronized final void destroyCore() {
         sExited = true;
-        ContactsManagerDestroy();
         BluetoothManagerDestroy();
         try {
             mTimer.cancel();
@@ -845,12 +831,6 @@ public class LinphoneManager implements CoreListener, SensorEventListener, Accou
 
     }
 
-    public static void ContactsManagerDestroy() {
-        if (LinphoneManager.instance != null && LinphoneManager.instance.mServiceContext != null)
-            LinphoneManager.instance.mServiceContext.getContentResolver().unregisterContentObserver(ContactsManager.getInstance());
-        ContactsManager.getInstance().destroy();
-    }
-
     public static void BluetoothManagerDestroy() {
         BluetoothManager.getInstance().destroy();
     }
@@ -917,23 +897,14 @@ public class LinphoneManager implements CoreListener, SensorEventListener, Accou
         increaseUnreadCountForChatRoom(cr);
 
         Address from = message.getFromAddress();
-        LinphoneContact contact = ContactsManager.getInstance().findContactFromAddress(from);
         String textMessage = (message.getFileTransferInformation() != null) ? getString(R.string.content_description_incoming_file) : message.getTextContent();
 
         if (!mServiceContext.getResources().getBoolean(R.bool.disable_chat_message_notification) && !message.isOutgoing()) {
             if (cr.hasCapability(ChatRoomCapabilities.OneToOne.toInt())) {
-                if (contact != null) {
-                    LinphoneService.instance().displayMessageNotification(cr.getPeerAddress().asStringUriOnly(), contact.getFullName(), contact.getThumbnailUri(), textMessage, cr.getLocalAddress().asString());
-                } else {
-                    LinphoneService.instance().displayMessageNotification(cr.getPeerAddress().asStringUriOnly(), from.getUsername(), null, textMessage, cr.getLocalAddress().asString());
-                }
+                LinphoneService.instance().displayMessageNotification(cr.getPeerAddress().asStringUriOnly(), from.getUsername(), null, textMessage, cr.getLocalAddress().asString());
             } else {
                 String subject = cr.getSubject();
-                if (contact != null) {
-                    LinphoneService.instance().displayGroupChatMessageNotification(subject, cr.getPeerAddress().asStringUriOnly(), contact.getFullName(), contact.getThumbnailUri(), textMessage, cr.getLocalAddress().asString());
-                } else {
-                    LinphoneService.instance().displayGroupChatMessageNotification(subject, cr.getPeerAddress().asStringUriOnly(), from.getUsername(), null, textMessage, cr.getLocalAddress().asString());
-                }
+                LinphoneService.instance().displayGroupChatMessageNotification(subject, cr.getPeerAddress().asStringUriOnly(), from.getUsername(), null, textMessage, cr.getLocalAddress().asString());
             }
         }
     }
@@ -1499,9 +1470,6 @@ public class LinphoneManager implements CoreListener, SensorEventListener, Accou
 
     @Override
     public void onFriendListCreated(Core lc, FriendList list) {
-        if (LinphoneService.isReady()) {
-            list.setListener(ContactsManager.getInstance());
-        }
     }
 
     @Override

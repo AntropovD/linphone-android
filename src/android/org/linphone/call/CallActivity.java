@@ -66,8 +66,6 @@ import org.linphone.LinphoneUtils;
 import org.linphone.R;
 import org.linphone.activities.LinphoneActivity;
 import org.linphone.activities.LinphoneGenericActivity;
-import org.linphone.contacts.ContactsManager;
-import org.linphone.contacts.LinphoneContact;
 import org.linphone.core.Address;
 import org.linphone.core.AddressFamily;
 import org.linphone.core.Call;
@@ -77,7 +75,6 @@ import org.linphone.core.CallParams;
 import org.linphone.core.CallStats;
 import org.linphone.core.Core;
 import org.linphone.core.CoreListenerStub;
-import org.linphone.core.MediaEncryption;
 import org.linphone.core.PayloadType;
 import org.linphone.core.Player;
 import org.linphone.core.StreamType;
@@ -592,8 +589,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
             pauseOrResumeCall(LinphoneManager.getLc().getCurrentCall());
         } else if (id == R.id.hang_up) {
             hangUp();
-        } else if (id == R.id.chat) {
-            goToChatList();
         } else if (id == R.id.switchCamera) {
             if (videoCallFragment != null) {
                 videoCallFragment.switchCamera();
@@ -1193,14 +1188,7 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
     }
 
     private void setContactInformation(TextView contactName, ImageView contactPicture, Address lAddress) {
-        LinphoneContact lContact = ContactsManager.getInstance().findContactFromAddress(lAddress);
-        if (lContact == null) {
-            contactName.setText(LinphoneUtils.getAddressDisplayName(lAddress));
-            contactPicture.setImageBitmap(ContactsManager.getInstance().getDefaultAvatarBitmap());
-        } else {
-            contactName.setText(lContact.getFullName());
-            LinphoneUtils.setImagePictureFromUri(contactPicture.getContext(), contactPicture, lContact.getPhotoUri(), lContact.getThumbnailUri());
-        }
+        contactName.setText(LinphoneUtils.getAddressDisplayName(lAddress));
     }
 
     private boolean displayCallStatusIconAndReturnCallPaused(LinearLayout callView, Call call) {
@@ -1356,12 +1344,7 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
         conferenceList.setId(index + 1);
         TextView contact = confView.findViewById(R.id.contactNameOrNumber);
 
-        LinphoneContact lContact = ContactsManager.getInstance().findContactFromAddress(call.getRemoteAddress());
-        if (lContact == null) {
-            contact.setText(call.getRemoteAddress().getUsername());
-        } else {
-            contact.setText(lContact.getFullName());
-        }
+        contact.setText(call.getRemoteAddress().getUsername());
 
         registerCallDurationTimer(confView, call);
 
