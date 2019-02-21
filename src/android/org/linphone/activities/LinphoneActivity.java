@@ -209,7 +209,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         return dateFormat.format(cal.getTime());
     }
 
-
     @Override
     public void onClick(View v) {
     }
