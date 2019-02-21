@@ -121,6 +121,10 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
         </activity>
         <activity
             android:name=".call.CallIncomingActivity"
@@ -153,37 +157,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             -->
-        </activity>
-        <activity
-            android:name=".assistant.AssistantActivity"
-            android:screenOrientation="behind"
-            android:theme="@style/NoTitle">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".assistant.RemoteProvisioningLoginActivity"
-            android:screenOrientation="nosensor"
-            android:theme="@style/NoTitle">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".assistant.RemoteProvisioningActivity"
-            android:screenOrientation="nosensor"
-            android:theme="@style/NoTitle">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-            </intent-filter>
-            <intent-filter>
-                <data android:scheme="linphone-config"/> <!-- Change if needed -->
-                <action android:name="android.intent.action.VIEW"/>
-
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
         </activity>
 
         <service

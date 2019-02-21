@@ -66,8 +66,6 @@ import org.linphone.LinphonePreferences;
 import org.linphone.LinphoneService;
 import org.linphone.LinphoneUtils;
 import org.linphone.R;
-import org.linphone.assistant.AssistantActivity;
-import org.linphone.assistant.RemoteProvisioningLoginActivity;
 import org.linphone.call.CallActivity;
 import org.linphone.call.CallIncomingActivity;
 import org.linphone.call.CallOutgoingActivity;
@@ -160,28 +158,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
     protected void onCreate(Bundle savedInstanceState) {
         //This must be done before calling super.onCreate().
         super.onCreate(savedInstanceState);
-
-        if (getResources().getBoolean(R.bool.orientation_portrait_only)) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        }
-        boolean useFirstLoginActivity = getResources().getBoolean(R.bool.display_account_assistant_at_first_start);
-        if (LinphonePreferences.instance().isProvisioningLoginViewEnabled()) {
-            Intent wizard = new Intent();
-            wizard.setClass(this, RemoteProvisioningLoginActivity.class);
-            wizard.putExtra("Domain", LinphoneManager.getInstance().wizardLoginViewDomain);
-            startActivity(wizard);
-            finish();
-            return;
-        } else if (savedInstanceState == null && (useFirstLoginActivity && LinphoneManager.getLcIfManagerNotDestroyedOrNull() != null
-                && LinphonePreferences.instance().isFirstLaunch())) {
-            if (LinphonePreferences.instance().getAccountCount() > 0) {
-                LinphonePreferences.instance().firstLaunchSuccessful();
-            } else {
-                startActivity(new Intent().setClass(this, AssistantActivity.class));
-                finish();
-                return;
-            }
-        }
 
         if (getResources().getBoolean(R.bool.use_linphone_tag)) {
             if (getPackageManager().checkPermission(Manifest.permission.WRITE_SYNC_SETTINGS, getPackageName()) != PackageManager.PERMISSION_GRANTED) {
@@ -553,10 +529,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         extras.putString("SipAddress", sipAddress);
         extras.putString("DisplayName", displayName);
         changeCurrentFragment(FragmentsAvailable.CONTACTS_LIST, extras);
-    }
-
-    public void displayAssistant() {
-        startActivity(new Intent(LinphoneActivity.this, AssistantActivity.class));
     }
 
     @Override
@@ -1269,16 +1241,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         menu = findViewById(R.id.side_menu_button);
 
         sideMenuItemList.setAdapter(new ArrayAdapter<>(this, R.layout.side_menu_item_cell, sideMenuItems));
-        sideMenuItemList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if (sideMenuItemList.getAdapter().getItem(i).toString().equals(getString(R.string.menu_assistant))) {
-                    LinphoneActivity.instance().displayAssistant();
-                }
-                openOrCloseSideMenu(false);
-            }
-        });
-
         initAccounts();
 
         menu.setOnClickListener(new OnClickListener() {

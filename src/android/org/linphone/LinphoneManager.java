@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -38,7 +37,6 @@ import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
@@ -49,12 +47,9 @@ import android.os.Vibrator;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.telephony.TelephonyManager;
-import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import org.linphone.activities.LinphoneActivity;
-import org.linphone.assistant.AssistantActivity;
 import org.linphone.call.CallActivity;
 import org.linphone.call.CallIncomingActivity;
 import org.linphone.call.CallManager;
@@ -272,16 +267,6 @@ public class LinphoneManager implements CoreListener, SensorEventListener, Accou
                             progress.setMax(max);
                             progress.setProgress(current);
                             progress.show();
-                        } else {
-                            progress.dismiss();
-                            progress = null;
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                                LinphoneManager.getLc().reloadMsPlugins(AssistantActivity.instance().getApplicationInfo().nativeLibraryDir);
-                                AssistantActivity.instance().endDownloadCodec();
-                            } else {
-                                // We need to restart due to bad android linker
-                                AssistantActivity.instance().restartApplication();
-                            }
                         }
                     }
                 });
@@ -1382,42 +1367,6 @@ public class LinphoneManager implements CoreListener, SensorEventListener, Accou
         }
     }
 
-    private void askLinkWithPhoneNumber() {
-        long now = new Timestamp(new Date().getTime()).getTime();
-        long future = new Timestamp(LinphoneActivity.instance().getResources().getInteger(R.integer.popup_time_interval)).getTime();
-        long newDate = now + future;
-
-        LinphonePreferences.instance().setLinkPopupTime(String.valueOf(newDate));
-
-        final Dialog dialog = LinphoneActivity.instance().displayDialog(String.format(getString(R.string.link_account_popup), LinphoneManager.getLc().getDefaultProxyConfig().getIdentityAddress().asStringUriOnly()));
-        Button delete = (Button) dialog.findViewById(R.id.delete_button);
-        delete.setText(getString(R.string.link));
-        Button cancel = (Button) dialog.findViewById(R.id.cancel);
-        cancel.setText(getString(R.string.maybe_later));
-
-        delete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent assistant = new Intent();
-                assistant.setClass(LinphoneActivity.instance(), AssistantActivity.class);
-                assistant.putExtra("LinkPhoneNumber", true);
-                assistant.putExtra("LinkPhoneNumberAsk", true);
-                mServiceContext.startActivity(assistant);
-                dialog.dismiss();
-            }
-        });
-
-        LinphonePreferences.instance().setLinkPopupTime(String.valueOf(newDate));
-
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
-        dialog.show();
-    }
-
     public String getmDynamicConfigFile() {
         return mDynamicConfigFile;
     }
@@ -1608,9 +1557,6 @@ public class LinphoneManager implements CoreListener, SensorEventListener, Accou
 
     @Override
     public void onLinkAccount(AccountCreator accountCreator, AccountCreator.Status status, String resp) {
-        if (status.equals(AccountCreator.Status.AccountNotLinked)) {
-            askLinkWithPhoneNumber();
-        }
     }
 
     @Override
@@ -1627,9 +1573,6 @@ public class LinphoneManager implements CoreListener, SensorEventListener, Accou
 
     @Override
     public void onIsAccountLinked(AccountCreator accountCreator, AccountCreator.Status status, String resp) {
-        if (status.equals(AccountCreator.Status.AccountNotLinked)) {
-            askLinkWithPhoneNumber();
-        }
     }
 
     @Override
@@ -1638,7 +1581,6 @@ public class LinphoneManager implements CoreListener, SensorEventListener, Accou
 
     @Override
     public void onUpdateAccount(AccountCreator accountCreator, AccountCreator.Status status, String resp) {
-
     }
 
     private void updateMissedChatCount() {
