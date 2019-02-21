@@ -52,7 +52,6 @@
 	<bool name="allow_cancel_remote_provisioning_login_activity">true</bool>
 
 	<!-- Inapp -->
-	<bool name="enable_in_app_purchase">false</bool>
 	<integer name="days_notification_shown">5</integer><!-- Notification shown before end of trial version in days -->
 	<integer name="time_between_inapp_notification">86400000</integer><!-- Time between two inapp notifications in milliseconds -->
 	<bool name="hide_username_in_inapp">true</bool>
@@ -98,10 +97,6 @@
 	<bool name="hide_numbers_and_addresses_without_presence">false</bool>
 	<bool name="hide_sip_contacts_without_presence">false</bool>
 	<bool name="hide_non_linphone_contacts">false</bool>
-
-	<!-- Side Menu -->
-	<bool name="hide_assistant_from_side_menu">false</bool>
-	<bool name="hide_settings_from_side_menu">false</bool>
 
 	<!-- Others Parameters-->
 	<string name="about_bugreport_email">linphone-android@belledonne-communications.com</string>

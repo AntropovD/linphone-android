@@ -35,7 +35,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -87,7 +86,6 @@ import org.linphone.core.Call;
 import org.linphone.core.Call.State;
 import org.linphone.core.CallLog;
 import org.linphone.core.Core;
-import org.linphone.core.CoreException;
 import org.linphone.core.CoreListenerStub;
 import org.linphone.core.Factory;
 import org.linphone.core.ProxyConfig;
@@ -99,7 +97,6 @@ import org.linphone.fragments.HistoryDetailFragment;
 import org.linphone.fragments.HistoryListFragment;
 import org.linphone.fragments.StatusFragment;
 import org.linphone.mediastream.Log;
-import org.linphone.purchase.InAppPurchaseActivity;
 import org.linphone.ui.AddressText;
 import org.linphone.xmlrpc.XmlRpcHelper;
 import org.linphone.xmlrpc.XmlRpcListenerBase;
@@ -560,10 +557,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
 
     public void displayAssistant() {
         startActivity(new Intent(LinphoneActivity.this, AssistantActivity.class));
-    }
-
-    public void displayInapp() {
-        startActivity(new Intent(LinphoneActivity.this, InAppPurchaseActivity.class));
     }
 
     @Override
@@ -1129,10 +1122,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
 
         refreshAccounts();
 
-        if (getResources().getBoolean(R.bool.enable_in_app_purchase)) {
-            isTrialAccount();
-        }
-
         displayMissedCalls(LinphoneManager.getLc().getMissedCallsCount());
 
         LinphoneManager.getInstance().changeStatusToOnline();
@@ -1205,9 +1194,6 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         if (extras != null && extras.getBoolean("GoToHistory", false)) {
             intent.putExtra("DoNotGoToCallActivity", true);
             changeCurrentFragment(FragmentsAvailable.HISTORY_LIST, null);
-        } else if (extras != null && extras.getBoolean("GoToInapp", false)) {
-            intent.putExtra("DoNotGoToCallActivity", true);
-            displayInapp();
         } else if (extras != null && extras.getBoolean("Notification", false)) {
             if (LinphoneManager.getLc().getCallsNb() > 0) {
                 Call call = LinphoneManager.getLc().getCalls()[0];
@@ -1275,15 +1261,9 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
     public void initSideMenu() {
         sideMenu = findViewById(R.id.side_menu);
         sideMenuItems = new ArrayList<>();
-        if (!getResources().getBoolean(R.bool.hide_assistant_from_side_menu)) {
-            sideMenuItems.add(getResources().getString(R.string.menu_assistant));
-        }
-        if (!getResources().getBoolean(R.bool.hide_settings_from_side_menu)) {
-            sideMenuItems.add(getResources().getString(R.string.menu_settings));
-        }
-        if (getResources().getBoolean(R.bool.enable_in_app_purchase)) {
-            sideMenuItems.add(getResources().getString(R.string.inapp));
-        }
+
+        sideMenuItems.add(getResources().getString(R.string.menu_assistant));
+
         sideMenuContent = findViewById(R.id.side_menu_content);
         sideMenuItemList = findViewById(R.id.item_list);
         menu = findViewById(R.id.side_menu_button);

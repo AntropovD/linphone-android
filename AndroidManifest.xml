@@ -163,14 +163,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".purchase.InAppPurchaseActivity"
-            android:screenOrientation="nosensor"
-            android:theme="@style/NoTitle">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-            </intent-filter>
-        </activity>
-        <activity
             android:name=".assistant.RemoteProvisioningLoginActivity"
             android:screenOrientation="nosensor"
             android:theme="@style/NoTitle">
