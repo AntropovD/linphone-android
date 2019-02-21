@@ -817,7 +817,7 @@ public final class LinphoneService extends Service {
      */
     private synchronized void notifyWrapper(int id, Notification notification) {
         if (instance != null && notification != null) {
-            mNM.notify(id, notification);
+            //mNM.notify(id, notification);
         } else {
             Log.i("Service not ready, discarding notification");
         }
