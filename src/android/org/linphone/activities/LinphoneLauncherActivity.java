@@ -28,11 +28,9 @@ import android.os.Handler;
 import android.util.Log;
 
 import org.linphone.LinphoneManager;
-import org.linphone.LinphonePreferences;
 import org.linphone.LinphoneService;
 import org.linphone.LinphoneUtils;
 import org.linphone.R;
-import org.linphone.assistant.RemoteProvisioningActivity;
 import org.linphone.call.CallActivity;
 import org.linphone.contacts.ContactsManager;
 
@@ -105,15 +103,7 @@ public class LinphoneLauncherActivity extends Activity {
     }
 
     protected void onServiceReady() {
-        final Class<? extends Activity> classToStart;
-		/*if (getResources().getBoolean(R.bool.show_tutorials_instead_of_app)) {
-			classToStart = TutorialLauncherActivity.class;
-		} else */
-        if (getResources().getBoolean(R.bool.display_sms_remote_provisioning_activity) && LinphonePreferences.instance().isFirstRemoteProvisioning()) {
-            classToStart = RemoteProvisioningActivity.class;
-        } else {
-            classToStart = LinphoneActivity.class;
-        }
+        final Class<? extends Activity> classToStart = LinphoneActivity.class;
 
         mHandler.postDelayed(new Runnable() {
             @Override

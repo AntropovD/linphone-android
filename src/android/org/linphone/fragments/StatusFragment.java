@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.Fragment;
-import android.app.KeyguardManager;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -42,7 +41,6 @@ import org.linphone.LinphoneManager;
 import org.linphone.LinphoneService;
 import org.linphone.R;
 import org.linphone.activities.LinphoneActivity;
-import org.linphone.assistant.AssistantActivity;
 import org.linphone.call.CallActivity;
 import org.linphone.core.Call;
 import org.linphone.core.Content;
@@ -148,9 +146,6 @@ public class StatusFragment extends Fragment {
         } else if (activity instanceof CallActivity) {
             ((CallActivity) activity).updateStatusFragment(this);
             isInCall = true;
-        } else if (activity instanceof AssistantActivity) {
-            ((AssistantActivity) activity).updateStatusFragment(this);
-            isInCall = false;
         }
 
         return view;
