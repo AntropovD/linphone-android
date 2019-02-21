@@ -106,7 +106,7 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
     private Runnable mControls;
     private ImageView switchCamera;
     private RelativeLayout mActiveCallHeader, sideMenuContent, avatar_layout;
-    private ImageView pause, hangUp, video, micro, speaker, options, addCall, transfer, conference, conferenceStatus, contactPicture;
+    private ImageView pause, hangUp, video, micro, speaker, conferenceStatus, contactPicture;
     private ImageView audioRoute, routeSpeaker, routeEarpiece, routeBluetooth, menu;
     private LinearLayout mNoCurrentCall, callInfo, mCallPaused;
     private ProgressBar videoProgress;
@@ -227,7 +227,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
                 }
 
                 refreshIncallUi();
-                transfer.setEnabled(LinphoneManager.getLc().getCurrentCall() != null);
             }
 
             @Override
@@ -345,10 +344,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
         speaker = findViewById(R.id.speaker);
         speaker.setOnClickListener(this);
 
-        options = findViewById(R.id.options);
-        options.setOnClickListener(this);
-        options.setEnabled(false);
-
         //BottonBar
         hangUp = findViewById(R.id.hang_up);
         hangUp.setOnClickListener(this);
@@ -367,19 +362,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
         contactPicture = findViewById(R.id.contact_picture);
         avatar_layout = findViewById(R.id.avatar_layout);
 
-        //Options
-        addCall = findViewById(R.id.add_call);
-        addCall.setOnClickListener(this);
-        addCall.setEnabled(false);
-
-        transfer = findViewById(R.id.transfer);
-        transfer.setOnClickListener(this);
-        transfer.setEnabled(false);
-
-        conference = findViewById(R.id.conference);
-        conference.setEnabled(false);
-        conference.setOnClickListener(this);
-
         try {
             audioRoute = findViewById(R.id.audio_route);
             audioRoute.setOnClickListener(this);
@@ -397,10 +379,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
         switchCamera.setOnClickListener(this);
 
         mControlsLayout = findViewById(R.id.menu);
-
-        if (!isTransferAllowed) {
-            addCall.setBackgroundResource(R.drawable.options_add_call);
-        }
 
         if (BluetoothManager.getInstance().isBluetoothHeadsetAvailable()) {
             try {
@@ -560,26 +538,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
     }
 
     private void enableAndRefreshInCallActions() {
-        int confsize = 0;
-
-        if (LinphoneManager.getLc().isInConference()) {
-            confsize = LinphoneManager.getLc().getConferenceSize() - (LinphoneManager.getLc().getConference() != null ? 1 : 0);
-        }
-
-        //Enabled transfer button
-        if (isTransferAllowed && !LinphoneManager.getLc().soundResourcesLocked())
-            enabledTransferButton(true);
-
-        //Enable conference button
-        if (LinphoneManager.getLc().getCallsNb() > 1 && LinphoneManager.getLc().getCallsNb() > confsize && !LinphoneManager.getLc().soundResourcesLocked()) {
-            enabledConferenceButton(true);
-        } else {
-            enabledConferenceButton(false);
-        }
-
-        addCall.setEnabled(LinphoneManager.getLc().getCallsNb() < LinphoneManager.getLc().getMaxCalls() && !LinphoneManager.getLc().soundResourcesLocked());
-        options.setEnabled(!getResources().getBoolean(R.bool.disable_options_in_call) && (addCall.isEnabled() || transfer.isEnabled()));
-
         if (LinphoneManager.getLc().getCurrentCall() != null && LinphonePreferences.instance().isVideoEnabled() && !LinphoneManager.getLc().getCurrentCall().mediaInProgress()) {
             enabledVideoButton(true);
         } else {
@@ -594,7 +552,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
         if (!isTablet()) {
             speaker.setEnabled(true);
         }
-        transfer.setEnabled(true);
         pause.setEnabled(true);
     }
 
@@ -631,25 +588,16 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
             }
         } else if (id == R.id.speaker) {
             toggleSpeaker();
-        } else if (id == R.id.add_call) {
-            goBackToDialer();
         } else if (id == R.id.pause) {
             pauseOrResumeCall(LinphoneManager.getLc().getCurrentCall());
         } else if (id == R.id.hang_up) {
             hangUp();
         } else if (id == R.id.chat) {
             goToChatList();
-        } else if (id == R.id.conference) {
-            enterConference();
-            hideOrDisplayCallOptions();
         } else if (id == R.id.switchCamera) {
             if (videoCallFragment != null) {
                 videoCallFragment.switchCamera();
             }
-        } else if (id == R.id.transfer) {
-            goBackToDialerAndDisplayTransferButton();
-        } else if (id == R.id.options) {
-            hideOrDisplayCallOptions();
         } else if (id == R.id.audio_route) {
             hideOrDisplayAudioRoutes();
         } else if (id == R.id.route_bluetooth) {
@@ -697,22 +645,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
         } else {
             pause.setEnabled(false);
             pause.setImageResource(R.drawable.pause_big_disabled);
-        }
-    }
-
-    private void enabledTransferButton(boolean enabled) {
-        if (enabled) {
-            transfer.setEnabled(true);
-        } else {
-            transfer.setEnabled(false);
-        }
-    }
-
-    private void enabledConferenceButton(boolean enabled) {
-        if (enabled) {
-            conference.setEnabled(true);
-        } else {
-            conference.setEnabled(false);
         }
     }
 
@@ -948,11 +880,7 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
             mControlsHandler.postDelayed(mControls = new Runnable() {
                 public void run() {
                     video.setEnabled(true);
-                    transfer.setVisibility(View.INVISIBLE);
-                    addCall.setVisibility(View.INVISIBLE);
-                    conference.setVisibility(View.INVISIBLE);
                     displayVideoCall(false);
-                    options.setImageResource(R.drawable.options_default);
                 }
             }, SECONDS_BEFORE_HIDING_CONTROLS);
         }
@@ -974,26 +902,6 @@ public class CallActivity extends LinphoneGenericActivity implements OnClickList
             routeSpeaker.setVisibility(View.VISIBLE);
             routeBluetooth.setVisibility(View.VISIBLE);
             routeEarpiece.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void hideOrDisplayCallOptions() {
-        //Hide options
-        if (addCall.getVisibility() == View.VISIBLE) {
-            options.setImageResource(R.drawable.options_default);
-            if (isTransferAllowed) {
-                transfer.setVisibility(View.INVISIBLE);
-            }
-            addCall.setVisibility(View.INVISIBLE);
-            conference.setVisibility(View.INVISIBLE);
-        } else { //Display options
-            if (isTransferAllowed) {
-                transfer.setVisibility(View.VISIBLE);
-            }
-            addCall.setVisibility(View.VISIBLE);
-            conference.setVisibility(View.VISIBLE);
-            options.setImageResource(R.drawable.options_selected);
-            transfer.setEnabled(LinphoneManager.getLc().getCurrentCall() != null);
         }
     }
 

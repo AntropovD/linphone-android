@@ -247,16 +247,6 @@
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
 						android:layout_weight="1" />
-
-					<ImageView
-						android:id="@+id/options"
-						android:src="@drawable/options_default"
-						android:background="@drawable/button_background"
-						android:contentDescription="@string/content_description_call_options"
-						android:padding="15dp"
-						android:layout_width="match_parent"
-						android:layout_height="wrap_content"
-						android:layout_weight="1" />
 				</LinearLayout>
 
 				<LinearLayout
@@ -310,17 +300,6 @@
 					android:layout_height="wrap_content"
 					android:layout_weight="0.5" />
 
-				<ImageView
-					android:id="@+id/add_call"
-					android:src="@drawable/options_add_call_button"
-					android:background="@drawable/button_background"
-					android:contentDescription="@string/content_description_add_call"
-					android:padding="15dp"
-					android:visibility="invisible"
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					android:layout_weight="0.5" />
-
 			</LinearLayout>
 
 			<LinearLayout
@@ -347,17 +326,6 @@
 					android:src="@drawable/route_earpiece"
 					android:background="@drawable/button_background"
 					android:contentDescription="@string/content_description_earpiece"
-					android:padding="15dp"
-					android:visibility="invisible"
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					android:layout_weight="0.5"/>
-
-				<ImageView
-					android:id="@+id/transfer"
-					android:src="@drawable/options_transfer_call_button"
-					android:background="@drawable/button_background"
-					android:contentDescription="@string/content_description_transfer"
 					android:padding="15dp"
 					android:visibility="invisible"
 					android:layout_width="match_parent"
@@ -394,18 +362,6 @@
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:layout_weight="0.5"/>
-
-				<ImageView
-					android:id="@+id/conference"
-					android:src="@drawable/options_start_conference_button"
-					android:background="@drawable/button_background"
-					android:contentDescription="@string/content_description_conference"
-					android:visibility="invisible"
-					android:padding="15dp"
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					android:layout_weight="0.5"/>
-
 			</LinearLayout>
 
 		</RelativeLayout>
