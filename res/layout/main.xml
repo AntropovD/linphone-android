@@ -11,4 +11,24 @@
 		android:layout_width="match_parent"
 		android:layout_height="40dp"
 		tools:layout="@layout/status" />
+
+	<EditText
+		android:id="@+id/sipAccountToCall"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:ems="10"
+		android:layout_below="@+id/status"
+		android:layout_marginTop="10dp"
+		android:text="@sip.linphone.org" />
+
+	<Button
+		android:id="@+id/call"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:ems="10"
+		android:layout_below="@+id/sipAccountToCall"
+		android:layout_marginTop="10dp"
+		android:text="Call"
+		android:onClick="onClick"/>
+
 </RelativeLayout>

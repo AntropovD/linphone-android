@@ -49,6 +49,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -211,6 +212,8 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
 
     @Override
     public void onClick(View v) {
+        EditText editText = findViewById(R.id.sipAccountToCall);
+        LinphoneManager.getInstance().newOutgoingCall(editText.getText().toString(), null);
     }
 
     public void displayCustomToast(final String message, final int duration) {
