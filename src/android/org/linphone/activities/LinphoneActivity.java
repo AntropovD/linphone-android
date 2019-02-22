@@ -79,6 +79,7 @@ import org.linphone.core.Factory;
 import org.linphone.core.ProxyConfig;
 import org.linphone.core.Reason;
 import org.linphone.core.RegistrationState;
+import org.linphone.core.TransportType;
 import org.linphone.fragments.StatusFragment;
 import org.linphone.mediastream.Log;
 import org.linphone.ui.AddressText;
@@ -286,6 +287,10 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         AccountCreator accountCreator = LinphoneManager.getLc().createAccountCreator(LinphonePreferences.instance().getXmlrpcUrl());
         accountCreator.setUsername(getApplicationContext().getString(R.string.account_login));
         accountCreator.setPassword(getApplicationContext().getString(R.string.account_password));
+        accountCreator.setDomain(getApplicationContext().getString(R.string.server_domain));
+        TransportType transportType = TransportType
+                .valueOf(getApplicationContext().getString(R.string.server_transport));
+        accountCreator.setTransport(transportType);
 
         LinphoneManager.getLc().getConfig().loadFromXmlFile(LinphoneManager.getInstance().getmDynamicConfigFile());
         configureProxyConfig(accountCreator);
