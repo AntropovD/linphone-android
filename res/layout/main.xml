@@ -19,7 +19,7 @@
 		android:ems="10"
 		android:layout_below="@+id/status"
 		android:layout_marginTop="10dp"
-		android:text="@sip.linphone.org" />
+		android:text="2@192.168.1.8:5169" />
 
 	<Button
 		android:id="@+id/call"

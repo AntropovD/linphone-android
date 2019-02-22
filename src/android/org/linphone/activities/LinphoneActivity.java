@@ -74,6 +74,7 @@ import org.linphone.core.Call;
 import org.linphone.core.Call.State;
 import org.linphone.core.CallLog;
 import org.linphone.core.Core;
+import org.linphone.core.CoreException;
 import org.linphone.core.CoreListenerStub;
 import org.linphone.core.Factory;
 import org.linphone.core.ProxyConfig;
@@ -284,57 +285,29 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
         if (proxy != null && proxy.getState() == RegistrationState.Ok)
             return;
 
-        AccountCreator accountCreator = LinphoneManager.getLc().createAccountCreator(LinphonePreferences.instance().getXmlrpcUrl());
-        accountCreator.setUsername(getApplicationContext().getString(R.string.account_login));
-        accountCreator.setPassword(getApplicationContext().getString(R.string.account_password));
-        accountCreator.setDomain(getApplicationContext().getString(R.string.server_domain));
+        String username = LinphoneUtils.getDisplayableUsernameFromAddress(
+                getApplicationContext().getString(R.string.account_login));
+        String password = getApplicationContext().getString(R.string.account_password);
+        String domain = LinphoneUtils.getDisplayableUsernameFromAddress(
+                getApplicationContext().getString(R.string.server_domain));
         TransportType transportType = TransportType
                 .valueOf(getApplicationContext().getString(R.string.server_transport));
-        accountCreator.setTransport(transportType);
 
-        LinphoneManager.getLc().getConfig().loadFromXmlFile(LinphoneManager.getInstance().getmDynamicConfigFile());
-        configureProxyConfig(accountCreator);
+        LinphonePreferences.AccountBuilder builder = new LinphonePreferences.AccountBuilder(LinphoneManager.getLc())
+                .setUsername(username)
+                .setDomain(domain)
+                .setPassword(password)
+                .setTransport(transportType);
+
+        try {
+            builder.saveNewAccount();
+        } catch (CoreException e) {
+            Log.e(e);
+        }
     }
 
-    public void configureProxyConfig(AccountCreator accountCreator) {
-        Core lc = LinphoneManager.getLc();
-        ProxyConfig proxyConfig = lc.createProxyConfig();
-        AuthInfo authInfo;
+    public void genericLogIn(String username, String password, String domain, TransportType transport) {
 
-        String identity = proxyConfig.getIdentityAddress().asStringUriOnly();
-        if (identity == null || accountCreator.getUsername() == null) {
-            LinphoneUtils.displayErrorAlert(getString(R.string.error), this);
-            return;
-        }
-        identity = identity.replace("?", accountCreator.getUsername());
-        Address addr = Factory.instance().createAddress(identity);
-        addr.setDisplayName(accountCreator.getUsername());
-        proxyConfig.edit();
-
-        proxyConfig.setIdentityAddress(addr);
-
-        if (accountCreator.getPhoneNumber() != null && accountCreator.getPhoneNumber().length() > 0)
-            proxyConfig.setDialPrefix(org.linphone.core.Utils.getPrefixFromE164(accountCreator.getPhoneNumber()));
-
-        proxyConfig.done();
-
-        authInfo = Factory.instance().createAuthInfo(
-                accountCreator.getUsername(),
-                null,
-                accountCreator.getPassword(),
-                accountCreator.getHa1(),
-                proxyConfig.getRealm(),
-                proxyConfig.getDomain());
-
-        lc.addProxyConfig(proxyConfig);
-        lc.addAuthInfo(authInfo);
-        lc.setDefaultProxyConfig(proxyConfig);
-
-        if (LinphonePreferences.instance() != null)
-            LinphonePreferences.instance().setPushNotificationEnabled(true);
-
-
-        LinphoneManager.getInstance().subscribeFriendList(getResources().getBoolean(R.bool.use_friendlist_subscription));
     }
 
     @Override

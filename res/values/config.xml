@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="account_login">1</string>
-    <string name="account_password">password</string>
-    <string name="server_domain">77com.ru:5169</string>
+    <string name="account_password">zxcvbn</string>
+    <string name="server_domain">192.168.1.8:5169</string>
     <string name="server_transport">Tcp</string>
 </resources>
