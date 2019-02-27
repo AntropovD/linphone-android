@@ -27,8 +27,10 @@ import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -110,6 +112,14 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
     private boolean isTrialAccount = false;
     private OrientationEventListener mOrientationHelper;
     private CoreListenerStub mListener;
+    private BroadcastReceiver broadcastReceiver;
+
+    public final static String BROADCAST_ACTION = "sipBroadcastAction";
+    public final static String PARAM_USERNAME = "username";
+    public final static String PARAM_PASSWORD = "password";
+    public final static String PARAM_DOMAIN = "domain";
+    public final static String PARAM_TRANSPORT = "transport";
+    public final static String PARAM_IS_VIDEO_CALL = "isVideoCall";
 
     private boolean callTransfer = false;
     private boolean isOnBackground = false;
@@ -201,7 +211,22 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
             onNewIntent(getIntent());
         }
 
-        linphoneLogIn();
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String username = intent.getStringExtra(PARAM_USERNAME);
+                String password = intent.getStringExtra(PARAM_PASSWORD);
+                String domain = intent.getStringExtra(PARAM_DOMAIN);
+                String transport = intent.getStringExtra(PARAM_TRANSPORT);
+                Boolean isVideoCall = intent.getBooleanExtra(PARAM_IS_VIDEO_CALL, false);
+
+                linphoneLogIn(username, password, domain, transport);
+                LinphonePreferences.instance().setInitiateVideoCall(isVideoCall);
+            }
+        };
+
+        IntentFilter intentFilter = new IntentFilter(BROADCAST_ACTION);
+        registerReceiver(broadcastReceiver, intentFilter);
     }
 
     @SuppressLint("SimpleDateFormat")
@@ -280,22 +305,19 @@ public class LinphoneActivity extends LinphoneGenericActivity implements OnClick
 
     private int mAlwaysChangingPhoneAngle = -1;
 
-    public void linphoneLogIn() {
+    public void linphoneLogIn(String account, String password, String domain, String transport) {
         ProxyConfig proxy = LinphoneManager.getLc().getDefaultProxyConfig();
         if (proxy != null && proxy.getState() == RegistrationState.Ok)
             return;
 
-        String username = LinphoneUtils.getDisplayableUsernameFromAddress(
-                getApplicationContext().getString(R.string.account_login));
-        String password = getApplicationContext().getString(R.string.account_password);
-        String domain = LinphoneUtils.getDisplayableUsernameFromAddress(
-                getApplicationContext().getString(R.string.server_domain));
-        TransportType transportType = TransportType
-                .valueOf(getApplicationContext().getString(R.string.server_transport));
+        String username = LinphoneUtils.getDisplayableUsernameFromAddress(account);
+        String domainAddress = LinphoneUtils.getDisplayableUsernameFromAddress(domain);
+        TransportType transportType = TransportType.valueOf(transport);
 
-        LinphonePreferences.AccountBuilder builder = new LinphonePreferences.AccountBuilder(LinphoneManager.getLc())
+        LinphonePreferences.AccountBuilder builder = new LinphonePreferences
+                .AccountBuilder(LinphoneManager.getLc())
                 .setUsername(username)
-                .setDomain(domain)
+                .setDomain(domainAddress)
                 .setPassword(password)
                 .setTransport(transportType);
 
