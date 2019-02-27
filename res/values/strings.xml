@@ -2,7 +2,7 @@
 <resources>
 
     <!-- Custom -->
-    <string name="app_name">Linphone</string>
+    <string name="app_name">doorphone-sip</string>
     <string name="service_name">Linphone Service</string>
     <string name="addressbook_label">Linphone</string>
     <string name="notification_title">Linphone</string>
